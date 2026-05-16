@@ -39,3 +39,9 @@ title = "About"
 type = "page"
 target = "about"
 href = "/"
+
+[[navigation]]
+title = "CV"
+type = "page"
+target = "cv"
+href = "/cv"
