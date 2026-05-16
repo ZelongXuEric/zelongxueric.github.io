@@ -1,0 +1,41 @@
+[site]
+title = "Zelong Xu"
+description = "Personal website of Zelong Xu"
+url = "https://zelongxueric.github.io"
+favicon = "/favicon.svg"
+last_updated = "May 2026"
+
+[author]
+name = "Zelong Xu"
+title = "Senior Undergraduate Student"
+institution = "University of Wisconsin–Madison"
+avatar = "/avatar.svg"
+
+[social]
+email = "zxu684@wisc.edu"
+location = "Madison, WI"
+location_url = ""
+location_details = ["University of Wisconsin–Madison"]
+google_scholar = ""
+orcid = ""
+github = "https://github.com/ZelongXuEric"
+linkedin = ""
+
+[features]
+enable_likes = false
+enable_one_page_mode = false
+
+[i18n]
+enabled = false
+locales = ["en"]
+default_locale = "en"
+mode = "fixed"
+fixed_locale = "en"
+persist = false
+switcher = false
+
+[[navigation]]
+title = "About"
+type = "page"
+target = "about"
+href = "/"
