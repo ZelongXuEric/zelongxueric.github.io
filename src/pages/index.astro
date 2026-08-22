@@ -14,7 +14,7 @@ const scholar = profile.links.find((link) => link.icon === 'scholar')?.url;
 <Base>
   <Hero profile={profile} />
   <div class="container">
-    <About />
+    <About profile={profile} />
     <Research interests={profile.interests} />
     <Publications me={profile.name} scholar={scholar} />
     <Education education={profile.education} />

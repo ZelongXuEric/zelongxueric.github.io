@@ -19,6 +19,7 @@ npm run preview   # serve dist/ locally
 | --- | --- |
 | `src/content/profile.yaml` | Name, role, tagline, status line, links, research interests, education, contact note |
 | `src/content/about.md` | Bio (Markdown) |
+| `src/content/portrait.webp` | Portrait shown beside the bio (referenced by `photo:` in `profile.yaml`; remove that line to hide it) |
 | `src/content/news.yaml` | Dated updates shown next to the bio |
 | `src/content/publications/*.md` | One file per paper — frontmatter is the metadata, the body is the abstract |
 | `public/files/` | CV PDF and other static files (served at `/files/...`) |
@@ -60,6 +61,7 @@ whichever exists first.
 ## Updating other things
 
 - **Bio** — edit `src/content/about.md`.
+- **Photo** — replace `src/content/portrait.webp` (any size; it is resized and converted at build time). A 4:5 head-and-shoulders crop looks best.
 - **Research interests** — the `interests` list in `profile.yaml` (shown in the hero and the Research section).
 - **CV** — copy the PDF to `public/files/Zelong_Xu_CV.pdf` and set the CV link's `url` to `/files/Zelong_Xu_CV.pdf`.
 - **Links** — the `links` list in `profile.yaml`; order is display order. Icons: `mail`, `file`,

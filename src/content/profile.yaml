@@ -10,6 +10,9 @@ affiliationUrl: https://www.wisc.edu/
 department: Department of Statistics
 email: zxu684@wisc.edu
 
+# Portrait for the About section (path relative to this file). Remove the line to hide it.
+photo: ./portrait.webp
+
 # Used for <meta name="description"> and social-media preview cards.
 description: >-
   Zelong Xu is an undergraduate researcher at the University of Wisconsin–Madison

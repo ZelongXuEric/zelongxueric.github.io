@@ -18,8 +18,11 @@ const link = z.object({
 
 const profile = defineCollection({
   loader: glob({ pattern: 'profile.yaml', base: './src/content' }),
-  schema: z.object({
+  schema: ({ image }) =>
+    z.object({
     name: z.string(),
+    // Portrait shown in the About section, relative to profile.yaml. Remove to hide.
+    photo: image().nullish(),
     role: z.string(),
     affiliation: z.string(),
     affiliationUrl: z.string().nullish(),
@@ -48,7 +51,7 @@ const profile = defineCollection({
         gpa: z.string().nullish(),
       }),
     ),
-  }),
+    }),
 });
 
 const about = defineCollection({
