@@ -1,0 +1,45 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Section from './Section.astro';
+
+interface Props { education: CollectionEntry<'profile'>['data']['education'] }
+const { education } = Astro.props;
+---
+<Section id="education" index="04" label="Background" title="Education">
+  <ol>
+    {education.map((entry, i) => (
+      <li class="edu" data-reveal style={`--reveal-delay: ${i * 90}ms`}>
+        <p class="edu__dates">{entry.start} — {entry.end}</p>
+        <div>
+          <h3 class="edu__school">
+            {entry.url ? <a href={entry.url} target="_blank" rel="noopener noreferrer">{entry.institution}</a> : entry.institution}
+          </h3>
+          <p class="edu__degree">{entry.degree}</p>
+          {entry.detail && <p class="edu__detail">{entry.detail}</p>}
+          {entry.gpa && <p class="edu__gpa">GPA {entry.gpa}</p>}
+        </div>
+      </li>
+    ))}
+  </ol>
+</Section>
+
+<style>
+  .edu {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem 2rem;
+    padding-block: 1.75rem;
+    border-top: 1px solid var(--rule);
+  }
+  .edu:last-child { border-bottom: 1px solid var(--rule); }
+  @media (min-width: 700px) {
+    .edu { grid-template-columns: 12rem minmax(0, 1fr); }
+  }
+  .edu__dates { padding-top: 0.4rem; font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-3); }
+  .edu__school { font-size: clamp(1.35rem, 1.2rem + 0.6vw, 1.7rem); }
+  .edu__school a { text-decoration: none; }
+  .edu__school a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+  .edu__degree { margin-top: 0.5rem; font-weight: 500; }
+  .edu__detail { color: var(--ink-2); }
+  .edu__gpa { margin-top: 0.5rem; font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-3); }
+</style>

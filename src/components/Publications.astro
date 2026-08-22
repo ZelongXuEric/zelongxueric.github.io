@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import Section from './Section.astro';
+import Publication from './Publication.astro';
+import { groupByYear } from '../lib/publications';
+
+interface Props { me: string; scholar?: string | null }
+const { me, scholar } = Astro.props;
+const groups = groupByYear(await getCollection('publications'));
+---
+<Section id="publications" index="03" label="Papers" title="Publications">
+  {scholar && (
+    <p class="pubs__note" data-reveal>
+      Also listed on <a href={scholar} target="_blank" rel="noopener noreferrer">Google Scholar</a>.
+    </p>
+  )}
+  {[...groups].map(([year, pubs]) => (
+    <div class="pubs__year" data-reveal>
+      <h3 class="pubs__year-label">{year}</h3>
+      <ol class="pubs__list">
+        {pubs.map((pub) => <Publication pub={pub} me={me} />)}
+      </ol>
+    </div>
+  ))}
+</Section>
+
+<style>
+  .pubs__note { margin: -1rem 0 2rem; font-size: 0.95rem; color: var(--ink-2); }
+  .pubs__year {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem 2rem;
+    padding-block: 1.75rem;
+    border-top: 1px solid var(--rule);
+  }
+  .pubs__year:last-child { border-bottom: 1px solid var(--rule); }
+  .pubs__year-label {
+    padding-top: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+  }
+  .pubs__list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.75rem; }
+  @media (min-width: 700px) {
+    .pubs__year { grid-template-columns: 5rem minmax(0, 1fr); }
+  }
+</style>

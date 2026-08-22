@@ -1,0 +1,87 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Site profile. This file drives the hero, metadata, research interests,
+# education and all external links. Edit freely; the build validates it.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Zelong Xu
+role: Undergraduate Researcher
+affiliation: University of Wisconsin–Madison
+affiliationUrl: https://www.wisc.edu/
+department: Department of Statistics
+email: zxu684@wisc.edu
+
+# Used for <meta name="description"> and social-media preview cards.
+description: >-
+  Zelong Xu is an undergraduate researcher at the University of Wisconsin–Madison
+  working on AI agent evaluation, alignment, and model reasoning & interpretability.
+
+# One sentence under the name. <em> … </em> renders in italic.
+tagline: >-
+  I study how to <em>evaluate</em> AI agents, <em>align</em> them with what we
+  intend, and <em>understand</em> how they reason.
+
+# Status line with a live indicator in the hero. Set to "" to hide.
+status: Applying to CS PhD programs for Fall 2027
+
+# Paragraph at the top of the Contact section. Set to "" to hide.
+contactNote: >-
+  The best way to reach me is email. I am always happy to talk about research,
+  PhD opportunities, or anything on this page.
+
+# ── Links ─────────────────────────────────────────────────────────────────────
+# Order here is the display order. Leave `url` empty ("") until a link exists:
+# it then shows as a disabled placeholder rather than a broken link.
+# Icons: mail · file · scholar · github · orcid · linkedin · x · link
+links:
+  - label: Email
+    url: mailto:zxu684@wisc.edu
+    icon: mail
+  - label: CV
+    url: ""            # TODO: copy your CV to public/files/Zelong_Xu_CV.pdf and set "/files/Zelong_Xu_CV.pdf"
+    icon: file
+  - label: Google Scholar
+    url: ""            # TODO: https://scholar.google.com/citations?user=...
+    icon: scholar
+  - label: GitHub
+    url: https://github.com/ZelongXuEric
+    icon: github
+
+# GitHub URL of this site's source code (shown in the footer). "" hides it.
+repo: https://github.com/ZelongXuEric/zelongxueric.github.io
+
+# ── Research interests ────────────────────────────────────────────────────────
+interests:
+  - title: AI agent evaluation
+    blurb: >-
+      Benchmarks tell us whether an agent succeeded; they rarely tell us why, or
+      whether the result will hold outside the benchmark. I am interested in
+      evaluations that are faithful to real tasks, hard to game, and diagnostic,
+      so that a score actually predicts behavior.
+  - title: Alignment
+    blurb: >-
+      Alignment methods are only as good as the data and objectives behind them.
+      I am interested in making preference-based alignment more robust and
+      data-efficient, and in understanding when and why safety training fails
+      to generalize.
+  - title: Reasoning & interpretability
+    blurb: >-
+      When a model “reasons”, what is actually happening inside it? I am
+      interested in connecting internal representations to reasoning behavior,
+      and in using that understanding to make models more reliable and easier
+      to evaluate.
+
+# ── Education ─────────────────────────────────────────────────────────────────
+education:
+  - institution: University of Wisconsin–Madison
+    url: https://www.wisc.edu/
+    degree: B.S. in Statistics
+    detail: Certificates in Computer Science and Mathematics
+    start: Sep 2024
+    end: Jan 2027 (expected)
+    gpa: 3.90 / 4.00
+  - institution: Shandong University
+    url: https://www.sdu.edu.cn/
+    degree: Finance
+    start: Sep 2022
+    end: Jun 2024
+    gpa: 88.1 / 100

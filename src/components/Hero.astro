@@ -1,0 +1,123 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import Landscape from './Landscape.astro';
+
+interface Props { profile: CollectionEntry<'profile'>['data'] }
+const { profile } = Astro.props;
+const external = (url: string) =>
+  /^https?:/.test(url) ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+---
+<section class="hero container" aria-label="Introduction">
+  <div class="hero__text">
+    <p class="eyebrow hero__eyebrow" data-rise style="--i: 0">{profile.role} · {profile.affiliation}</p>
+    <h1 class="hero__name" data-rise style="--i: 1">{profile.name}</h1>
+    <p class="hero__tagline" data-rise style="--i: 2" set:html={profile.tagline}></p>
+    {profile.status && (
+      <p class="hero__status" data-rise style="--i: 3">
+        <span class="hero__pulse" aria-hidden="true"></span>{profile.status}
+      </p>
+    )}
+    <ul class="hero__threads" data-rise style="--i: 4" aria-label="Research interests">
+      {profile.interests.map((interest, i) => (
+        <li>
+          <a href="#research"><span class="hero__thread-index" aria-hidden="true">0{i + 1}</span>{interest.title}</a>
+        </li>
+      ))}
+    </ul>
+    <ul class="hero__links" data-rise style="--i: 5" aria-label="Links">
+      {profile.links.map((link) => (
+        <li>
+          {link.url ? (
+            <a class="chip" href={link.url} {...external(link.url)}><Icon name={link.icon} />{link.label}</a>
+          ) : (
+            <span class="chip" aria-disabled="true" title="Coming soon"><Icon name={link.icon} />{link.label}</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  </div>
+  <div class="hero__figure" data-rise style="--i: 3">
+    <Landscape />
+  </div>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(2.5rem, 6vw, 5rem);
+    align-items: center;
+    min-height: min(calc(100svh - var(--nav-h)), 52rem);
+    padding-block: clamp(3rem, 7vh, 5rem) clamp(3.5rem, 8vh, 6rem);
+  }
+  @media (min-width: 900px) {
+    .hero { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  }
+  .hero__eyebrow { margin-bottom: 1.75rem; }
+  .hero__name {
+    font-size: clamp(3.5rem, 2rem + 8vw, 7rem);
+    font-weight: 450;
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+  }
+  .hero__tagline {
+    max-width: 28ch;
+    margin-top: 1.5rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.7rem);
+    line-height: 1.35;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+  .hero__tagline :global(em) { font-style: italic; color: var(--ink); }
+  .hero__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-top: 1.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--ink-2);
+  }
+  .hero__pulse {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2.6s ease-out infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent); }
+    70%, 100% { box-shadow: 0 0 0 0.65rem transparent; }
+  }
+  .hero__threads {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.75rem;
+    margin-top: 2.25rem;
+  }
+  .hero__threads a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .hero__thread-index { font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent); }
+  .hero__links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 2rem; }
+
+  :global(.js) [data-rise] {
+    animation: rise 1s var(--ease-out) both;
+    animation-delay: calc(var(--i) * 90ms + 80ms);
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.js) [data-rise] { animation: none; }
+    .hero__pulse { animation: none; }
+  }
+</style>

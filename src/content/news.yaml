@@ -1,0 +1,5 @@
+# Short dated updates, newest first. `text` may contain inline HTML.
+# `date` is "YYYY-MM" or "YYYY-MM-DD" and is displayed as "Aug 2026".
+- id: 2026-08-dog-dpo-emnlp
+  date: 2026-08   # TODO: confirm the acceptance month
+  text: <strong>DOG-DPO</strong> is accepted to <em>Findings of EMNLP 2026</em>.

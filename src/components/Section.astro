@@ -1,0 +1,51 @@
+---
+// Page section with a sticky mono "kicker" (index + label) beside the content.
+interface Props { id: string; index: string; label: string; title: string }
+const { id, index, label, title } = Astro.props;
+---
+<section id={id} class="section" aria-labelledby={`${id}-title`}>
+  <div class="section__aside" aria-hidden="true">
+    <span class="section__index">{index}</span>
+    <span>{label}</span>
+  </div>
+  <div class="section__body">
+    <h2 id={`${id}-title`} class="section__title" data-reveal>{title}</h2>
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem 3rem;
+    padding-block: clamp(4rem, 9vw, 7.5rem);
+    border-top: 1px solid var(--rule);
+  }
+  .section__aside {
+    display: flex;
+    gap: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .section__index { color: var(--accent); font-weight: 500; }
+  .section__title {
+    margin-bottom: clamp(1.75rem, 3vw, 2.75rem);
+    font-size: clamp(2rem, 1.5rem + 2.2vw, 3rem);
+    letter-spacing: -0.02em;
+  }
+  @media (min-width: 860px) {
+    .section { grid-template-columns: 11rem minmax(0, 1fr); }
+    .section__aside {
+      position: sticky;
+      top: calc(var(--nav-h) + 2.5rem);
+      flex-direction: column;
+      gap: 0.4rem;
+      align-self: start;
+      padding-top: 0.9rem;
+    }
+  }
+</style>

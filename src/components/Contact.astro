@@ -1,0 +1,46 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import Section from './Section.astro';
+
+interface Props { profile: CollectionEntry<'profile'>['data'] }
+const { profile } = Astro.props;
+const links = profile.links.filter((link) => link.icon !== 'mail');
+---
+<Section id="contact" index="05" label="Contact" title="Get in touch">
+  <div data-reveal>
+    {profile.contactNote && <p class="prose contact__note" set:html={profile.contactNote}></p>}
+    <div class="contact__email">
+      <a class="contact__address" href={`mailto:${profile.email}`}>{profile.email}</a>
+      <button type="button" class="copy" data-copy={profile.email}>
+        <Icon name="copy" /><span data-copy-label>Copy</span>
+      </button>
+    </div>
+    {links.length > 0 && (
+      <ul class="contact__links" aria-label="Elsewhere">
+        {links.map((link) => (
+          <li>
+            {link.url ? (
+              <a class="chip" href={link.url} target="_blank" rel="noopener noreferrer"><Icon name={link.icon} />{link.label}</a>
+            ) : (
+              <span class="chip" aria-disabled="true" title="Coming soon"><Icon name={link.icon} />{link.label}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</Section>
+
+<style>
+  .contact__note { max-width: 52ch; color: var(--ink-2); }
+  .contact__email { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.25rem; margin-top: 2rem; }
+  .contact__address {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 1.2rem + 2vw, 2.6rem);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .contact__links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 2.25rem; }
+</style>

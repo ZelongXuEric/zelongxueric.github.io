@@ -1,0 +1,45 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import Section from './Section.astro';
+import { formatMonth } from '../lib/format';
+
+const about = (await getEntry('about', 'about'))!;
+const { Content } = await render(about);
+const news = (await getCollection('news')).sort((a, b) => b.data.date.localeCompare(a.data.date));
+---
+<Section id="about" index="01" label="About" title="About me">
+  <div class="about">
+    <div class="prose" data-reveal><Content /></div>
+    {news.length > 0 && (
+      <aside class="news" data-reveal style="--reveal-delay: 120ms" aria-labelledby="news-title">
+        <h3 id="news-title" class="eyebrow news__title">News</h3>
+        <ul>
+          {news.map((item) => (
+            <li>
+              <time datetime={item.data.date}>{formatMonth(item.data.date)}</time>
+              <span set:html={item.data.text}></span>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    )}
+  </div>
+</Section>
+
+<style>
+  .about { display: grid; gap: 3rem; }
+  @media (min-width: 1000px) {
+    .about { grid-template-columns: minmax(0, 1fr) 15rem; gap: 4.5rem; align-items: start; }
+  }
+  .news__title { margin-bottom: 0.5rem; }
+  .news li {
+    display: grid;
+    gap: 0.25rem;
+    padding-block: 0.9rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .news li:last-child { border-bottom: 1px solid var(--rule); }
+  .news time { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-3); }
+</style>

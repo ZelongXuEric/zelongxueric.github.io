@@ -1,0 +1,125 @@
+---
+import { render } from 'astro:content';
+import Icon from './Icon.astro';
+import { arxivUrl, bibtex, doiUrl, isSameAuthor, primaryUrl, type Publication } from '../lib/publications';
+
+interface Props { pub: Publication; me: string }
+const { pub, me } = Astro.props;
+const d = pub.data;
+const { Content } = await render(pub);
+const hasAbstract = (pub.body ?? '').trim().length > 0;
+const titleUrl = primaryUrl(pub);
+const links = [
+  d.arxiv ? { label: 'arXiv', url: arxivUrl(d.arxiv) } : null,
+  d.pdf ? { label: 'PDF', url: d.pdf } : null,
+  d.code ? { label: 'Code', url: d.code } : null,
+  d.project ? { label: 'Project page', url: d.project } : null,
+  d.doi ? { label: 'DOI', url: doiUrl(d.doi) } : null,
+].filter((link): link is { label: string; url: string } => link !== null);
+const bibId = `bibtex-${pub.id}`;
+---
+<li class:list={['pub', { 'pub--selected': d.selected }]}>
+  <h4 class="pub__title">
+    {titleUrl ? <a href={titleUrl} target="_blank" rel="noopener noreferrer">{d.title}</a> : d.title}
+  </h4>
+  <p class="pub__authors">
+    {d.authors.map((author, i) => (
+      <><span class:list={{ pub__me: isSameAuthor(author, me) }}>{author}</span>{i < d.authors.length - 1 && ', '}</>
+    ))}
+  </p>
+  <p class="pub__venue">
+    <span class="pub__venue-name">{d.venue ?? 'Preprint'}</span>
+    {d.arxiv && <span>arXiv:{d.arxiv}</span>}
+    {d.note && <span class="pub__note">{d.note}</span>}
+  </p>
+  <div class="pub__actions">
+    {links.map((link) => (
+      <a class="chip chip--sm" href={link.url} target="_blank" rel="noopener noreferrer">{link.label}<Icon name="arrow" /></a>
+    ))}
+    {hasAbstract && (
+      <details class="pub__details">
+        <summary class="chip chip--sm">Abstract<Icon name="chevron" /></summary>
+        <div class="pub__panel pub__abstract prose"><Content /></div>
+      </details>
+    )}
+    <details class="pub__details">
+      <summary class="chip chip--sm">BibTeX<Icon name="chevron" /></summary>
+      <div class="pub__panel">
+        <pre class="pub__bibtex" tabindex="0"><code id={bibId}>{bibtex(pub)}</code></pre>
+        <button type="button" class="copy pub__copy" data-copy-target={bibId}>
+          <Icon name="copy" /><span data-copy-label>Copy</span>
+        </button>
+      </div>
+    </details>
+  </div>
+</li>
+
+<style>
+  .pub { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.55rem; }
+  .pub__title { font-size: clamp(1.3rem, 1.15rem + 0.6vw, 1.6rem); line-height: 1.2; }
+  .pub__title a { text-decoration: none; }
+  .pub__title a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
+  .pub__authors { font-size: 0.95rem; line-height: 1.5; color: var(--ink-2); }
+  .pub__me {
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.2em;
+  }
+  .pub__venue {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ink-3);
+  }
+  .pub__venue-name { font-weight: 500; color: var(--ink); }
+  .pub__note { color: var(--accent); }
+  .pub__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+  .pub__details { min-width: 0; }
+  .pub__details[open] { flex-basis: 100%; }
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary :global(svg) { transition: transform 0.25s var(--ease-out); }
+  .pub__details[open] summary { border-color: var(--accent); color: var(--accent); }
+  .pub__details[open] summary :global(svg) { transform: rotate(180deg); color: var(--accent); }
+  .pub__panel {
+    position: relative;
+    margin-top: 0.9rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    animation: panel 0.35s var(--ease-out);
+  }
+  @keyframes panel { from { opacity: 0; transform: translateY(-4px); } }
+  .pub__abstract { max-width: 72ch; font-size: 1.05rem; line-height: 1.55; color: var(--ink-2); }
+  .pub__bibtex {
+    margin: 0;
+    padding-right: 5rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .pub__copy { position: absolute; top: 0.75rem; right: 0.75rem; }
+  @media (min-width: 700px) {
+    .pub--selected::before {
+      content: '';
+      position: absolute;
+      top: 0.6rem;
+      left: -1.25rem;
+      width: 0.4rem;
+      height: 0.4rem;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pub__panel { animation: none; }
+  }
+</style>

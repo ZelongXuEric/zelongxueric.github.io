@@ -1,0 +1,210 @@
+/* Self-hosted fonts. Only the subsets a page actually uses are downloaded. */
+@import '@fontsource-variable/fraunces/opsz.css';
+@import '@fontsource-variable/fraunces/opsz-italic.css';
+@import '@fontsource-variable/ibm-plex-sans/index.css';
+@import '@fontsource-variable/ibm-plex-sans/wght-italic.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+/* ---------------------------------------------------------------------------
+   Design tokens. Every colour is defined once with light-dark(); the active
+   scheme is chosen by [data-theme] (set by the toggle) or the OS preference.
+--------------------------------------------------------------------------- */
+:root {
+  color-scheme: light dark;
+
+  --bg: light-dark(#f6f3ec, #121211);
+  --bg-elev: light-dark(#fdfcf9, #1a1a18);
+  --ink: light-dark(#1a1916, #ebe7dd);
+  --ink-2: light-dark(#575349, #a9a497);
+  --ink-3: light-dark(#6f6a5e, #8a8579);
+  --rule: light-dark(#e2ded4, #2a2a27);
+  --rule-strong: light-dark(#cbc6ba, #3d3c37);
+  --accent: light-dark(#a3242b, #e4646d);
+  --accent-soft: light-dark(rgb(163 36 43 / 0.08), rgb(228 100 109 / 0.12));
+  --selection: light-dark(rgb(163 36 43 / 0.16), rgb(228 100 109 / 0.28));
+
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-sans: 'IBM Plex Sans Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --container: 1120px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --nav-h: 4rem;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--nav-h) + 1.5rem);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--selection); }
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+img, svg, canvas { display: block; max-width: 100%; }
+strong { font-weight: 600; }
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.2em;
+  transition: color 0.2s, text-decoration-color 0.2s;
+}
+a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.container {
+  width: min(100% - 2 * var(--gutter), var(--container));
+  margin-inline: auto;
+}
+
+.skip-link {
+  position: absolute;
+  top: -4rem;
+  left: 1rem;
+  z-index: 100;
+  padding: 0.6rem 0.9rem;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+.skip-link:focus { top: 1rem; }
+
+/* ---------------------------------------------------------------------------
+   Shared primitives
+--------------------------------------------------------------------------- */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Long-form text (bio, abstracts) is set in the display serif. */
+.prose {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 1.05rem + 0.35vw, 1.3rem);
+  line-height: 1.55;
+}
+.prose p + p { margin-top: 1em; }
+.prose em { font-style: italic; }
+.prose strong { font-weight: 600; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s, transform 0.25s var(--ease-out);
+}
+.chip svg { width: 1rem; height: 1rem; color: var(--ink-2); transition: color 0.2s; }
+.chip:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+.chip:hover svg { color: var(--accent); }
+.chip--sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+.chip[aria-disabled='true'] {
+  border-style: dashed;
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+.chip[aria-disabled='true']:hover { background: none; border-color: var(--rule-strong); transform: none; }
+.chip[aria-disabled='true']:hover svg { color: var(--ink-2); }
+
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-2);
+  transition: border-color 0.2s, color 0.2s;
+}
+.copy svg { width: 0.9rem; height: 0.9rem; }
+.copy:hover { border-color: var(--accent); color: var(--accent); }
+.copy.is-copied { border-color: var(--accent); color: var(--accent); }
+
+/* ---------------------------------------------------------------------------
+   Reveal on scroll (only when JS is available; honours reduced motion)
+--------------------------------------------------------------------------- */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.js [data-reveal].is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .js [data-reveal] { opacity: 1; transform: none; transition: none; }
+  .chip, .chip:hover { transform: none; }
+}
