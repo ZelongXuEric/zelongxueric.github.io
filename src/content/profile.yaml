@@ -37,7 +37,7 @@ links:
     url: mailto:zxu684@wisc.edu
     icon: mail
   - label: CV
-    url: ""            # TODO: copy your CV to public/files/Zelong_Xu_CV.pdf and set "/files/Zelong_Xu_CV.pdf"
+    url: "/files/Zelong_Xu_CV.pdf"            # TODO: copy your CV to public/files/Zelong_Xu_CV.pdf and set "/files/Zelong_Xu_CV.pdf"
     icon: file
   - label: Google Scholar
     url: ""            # TODO: https://scholar.google.com/citations?user=...
