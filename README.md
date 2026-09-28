@@ -1,8 +1,7 @@
 # Zelong Xu - research homepage
 
 A static academic homepage built with Astro. The page consists of a compact profile
-sidebar, a short biography, one ordered research list, and a short Beyond Research
-section. There is no backend or
+sidebar, a short biography, and one ordered research list. There is no backend or
 client-side framework. The portrait, paper figures, and fonts are served locally.
 
 ## Development
@@ -21,7 +20,6 @@ npm run preview
 | --- | --- |
 | `src/content/profile.yaml` | Identity, city, affiliation, application status, profile links |
 | `src/content/about.md` | Two short introductory paragraphs |
-| `src/content/beyond/` | Photos for the Beyond Research slideshows (listed under `beyond` in `profile.yaml`) |
 | `src/content/portrait.jpg` | Square portrait crop (subject left of center), optimized at build time and shown as a circle |
 | `src/content/publications/*.md` | One research item per file |
 | `src/content/publications/figures/` | One figure per paper, optimized at build time |
@@ -95,8 +93,8 @@ size, e.g. `ffmpeg -i in.mp4 -vf scale=854:-2 -c:v libx264 -preset slow -crf 27
 
 ## Typography
 
-IBM Plex Sans is the text face. The English name and the Xiaohongshu line use
-Source Serif 4 (roman and italic). The Chinese name (`nameZh` in `profile.yaml`)
+IBM Plex Sans is the text face. The English name uses Source Serif 4. The
+Chinese name (`nameZh` in `profile.yaml`)
 uses Noto Serif SC (SIL OFL 1.1), subset to exactly 徐泽龙 in
 `src/assets/fonts/noto-serif-sc-name.woff2` (2.5 KB). If the name changes,
 regenerate the subset from
@@ -110,18 +108,15 @@ pyftsubset 'NotoSerifSC[wght].ttf' --text='徐泽龙' --layout-features='' \
 
 Characters missing from the subset fall back to system Song/Ming fonts.
 
-The Xiaohongshu link shows the platform's wordmark in white on its brand red
-(`src/components/XiaohongshuLogo.astro`, path from Simple Icons, CC0-1.0).
+The Xiaohongshu link in the sidebar uses the platform's app icon, its wordmark in
+white on the brand red (`src/components/XiaohongshuIcon.astro`, path from Simple
+Icons, CC0-1.0).
 
 ## Interactions and accessibility
 
 - Native Abstract and BibTeX disclosures work without JavaScript.
 - Only one disclosure per paper opens at a time; content fades in for 160 ms.
 - Link color changes take 120 ms. Reduced-motion preferences disable both effects.
-- Beyond Research frames crossfade every 3.5 s while on screen and pause under the
-  pointer; the two rows are offset. With reduced motion they stay on the first
-  photo. The dots jump to a photo, and a frame opens a viewer with arrow-key
-  navigation. Without JavaScript a frame links to its first full-size photo.
 - Clipboard controls announce success or select the citation if access is denied.
 - Keyboard focus, a skip link, mobile layout, and print styles are included.
 
@@ -154,11 +149,10 @@ src/components/Profile.astro       Portrait, English and Chinese name, contact l
 src/components/About.astro         Short bio and application status
 src/components/Publications.astro  Research heading and ordered list
 src/components/Publication.astro   Figure, paper metadata, native disclosures
-src/components/Beyond.astro        Photo slideshows and viewer for life outside research
 src/components/Footer.astro        Last-updated date (build date)
 src/layouts/Base.astro             Document metadata and skip link
 src/pages/index.astro              Two-column layout
-src/scripts/ui.ts                  Clipboard, figure videos, slideshows, photo viewer
+src/scripts/ui.ts                  Clipboard feedback, figure video playback
 src/styles/global.css             Typography, colors, responsive layout
 src/assets/fonts/                  Chinese name font subset
 ```

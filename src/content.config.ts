@@ -21,26 +21,8 @@ const profile = defineCollection({
       links: z.array(z.object({
         label: z.string(),
         url: z.string().nullish(),
-        icon: z.enum(['mail', 'file', 'scholar', 'github', 'orcid', 'linkedin', 'x', 'link']).default('link'),
+        icon: z.enum(['mail', 'file', 'scholar', 'github', 'xiaohongshu', 'orcid', 'linkedin', 'x', 'link']).default('link'),
       })),
-      beyond: z.array(z.object({
-        title: z.string(),
-        text: z.string(),
-        photos: z.array(z.object({
-          image: image(),
-          alt: z.string(),
-          // CSS object-position of the square thumbnail crop.
-          position: z.string().default('50% 50%'),
-        })).min(1),
-        aside: z.object({
-          label: z.string(),
-          platform: z.string(),
-          // Draw the platform's wordmark instead of its name.
-          logo: z.enum(['xiaohongshu']).nullish(),
-          detail: z.string().nullish(),
-          url: z.url(),
-        }).nullish(),
-      })).default([]),
     }),
 });
 

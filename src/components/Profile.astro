@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import Icon from './Icon.astro';
+import XiaohongshuIcon from './XiaohongshuIcon.astro';
 import { withBase } from '../lib/url';
 
 interface Props { profile: CollectionEntry<'profile'>['data'] }
@@ -34,7 +35,7 @@ const links = profile.links.filter((link) => link.url);
     )}
     {links.map((link) => (
       <a href={link.url!.startsWith('/') ? withBase(link.url!) : link.url!}>
-        <Icon name={link.icon} /><span>{link.label}</span>
+        {link.icon === 'xiaohongshu' ? <XiaohongshuIcon /> : <Icon name={link.icon} />}<span>{link.label}</span>
       </a>
     ))}
   </nav>
