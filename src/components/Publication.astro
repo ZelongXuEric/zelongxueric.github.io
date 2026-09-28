@@ -52,7 +52,7 @@ const poster = d.video && d.image ? await getImage({ src: d.image, width: 854, f
       </p>
     )}
     {d.equalContribution.length > 0 && (
-      <p class="pub__contribution" id={contributionNoteId}>* Equal contribution (co-first authors).</p>
+      <p class="pub__contribution" id={contributionNoteId}>* Equal contribution.</p>
     )}
     <p class="pub__meta">
       <span class:list={{ pub__venue: d.status === 'published' }}>{venue}</span>
@@ -102,6 +102,11 @@ const poster = d.video && d.image ? await getImage({ src: d.image, width: 854, f
     background: #fff;
     border: 1px solid var(--rule);
     border-radius: 4px;
+    transition: border-color 120ms ease;
+  }
+  @media (hover: hover) {
+    .pub:hover .pub__figure :global(img), .pub:hover .pub__figure video { border-color: #a1bdc4; }
+    .pub:hover .pub__title a { text-decoration: underline; }
   }
   .pub__title { font-size: 16px; line-height: 1.5; font-weight: 600; overflow-wrap: anywhere; }
   .pub__title a { text-decoration: none; }

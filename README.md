@@ -1,7 +1,8 @@
 # Zelong Xu - research homepage
 
 A static academic homepage built with Astro. The page consists of a compact profile
-sidebar, a short biography, and one ordered research list. There is no backend or
+sidebar, a short biography, one ordered research list, and a short Beyond Research
+section. There is no backend or
 client-side framework. The portrait, paper figures, and fonts are served locally.
 
 ## Development
@@ -20,6 +21,7 @@ npm run preview
 | --- | --- |
 | `src/content/profile.yaml` | Identity, city, affiliation, application status, profile links |
 | `src/content/about.md` | Two short introductory paragraphs |
+| `src/content/beyond/` | 4:5 photo crops for the Beyond Research cards (listed under `beyond` in `profile.yaml`) |
 | `src/content/portrait.jpg` | Square portrait crop (subject left of center), optimized at build time and shown as a circle |
 | `src/content/publications/*.md` | One research item per file |
 | `src/content/publications/figures/` | One figure per paper, optimized at build time |
@@ -144,7 +146,8 @@ src/components/Profile.astro       Portrait, English and Chinese name, contact l
 src/components/About.astro         Short bio and application status
 src/components/Publications.astro  Research heading and ordered list
 src/components/Publication.astro   Figure, paper metadata, native disclosures
-src/components/Footer.astro        Source link
+src/components/Beyond.astro        Photo cards for life outside research
+src/components/Footer.astro        Last-updated date (build date)
 src/layouts/Base.astro             Document metadata and skip link
 src/pages/index.astro              Two-column layout
 src/scripts/ui.ts                  Clipboard feedback, figure video playback

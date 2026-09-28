@@ -1,0 +1,52 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props { items: CollectionEntry<'profile'>['data']['beyond'] }
+const { items } = Astro.props;
+---
+{items.length > 0 && (
+  <section id="beyond" class="beyond" aria-labelledby="beyond-title">
+    <h2 class="section-title" id="beyond-title">Beyond Research</h2>
+    <ul class="beyond__list" role="list">
+      {items.map((item) => (
+        <li class="beyond__item">
+          <div class="beyond__photo">
+            <Image src={item.image} alt={item.imageAlt} widths={[360, 720]}
+              sizes="(max-width: 760px) calc(50vw - 32px), 352px"
+              format="webp" quality={82} loading="lazy" decoding="async" />
+          </div>
+          <p class="beyond__caption">
+            <strong>{item.title}.</strong> {item.text}
+            {item.link && <a href={item.link.url}>[{item.link.label}]</a>}
+          </p>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<style>
+  .beyond { margin-top: 48px; }
+  .beyond__list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .beyond__item { min-width: 0; }
+  .beyond__photo { overflow: hidden; border-radius: 4px; aspect-ratio: 4 / 5; background: var(--rule); }
+  .beyond__photo :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @media (hover: hover) {
+    .beyond__item:hover .beyond__photo :global(img) { transform: scale(1.035); }
+  }
+  .beyond__caption { margin-top: 10px; font-size: 14px; line-height: 1.6; color: var(--muted); }
+  .beyond__caption strong { color: var(--ink); }
+  .beyond__caption a { text-decoration: none; white-space: nowrap; }
+  .beyond__caption a:hover { text-decoration: underline; }
+  @media (max-width: 760px) {
+    .beyond__list { gap: 14px; }
+    .beyond__caption { font-size: 13.5px; }
+  }
+  @media print { .beyond { display: none; } }
+</style>

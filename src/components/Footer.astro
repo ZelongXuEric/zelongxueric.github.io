@@ -1,11 +1,9 @@
 ---
-interface Props { repo?: string | null }
-const { repo } = Astro.props;
+// Build date; every deploy rebuilds the site, so this tracks the last published change.
+const updated = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 ---
-{repo && <footer class="site-footer"><a href={repo}>Source</a></footer>}
+<footer class="site-footer"><p>Last updated {updated}</p></footer>
 
 <style>
-  .site-footer { margin-top: 42px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 12px; }
-  a { color: var(--muted); text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  .site-footer { margin-top: 42px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--muted); }
 </style>

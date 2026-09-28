@@ -67,6 +67,7 @@ button { font: inherit; cursor: pointer; }
   align-items: start;
 }
 main { min-width: 0; }
+.section-title { font-size: 21px; padding-bottom: 9px; border-bottom: 1px solid var(--rule); margin-bottom: 22px; }
 .prose p + p { margin-top: 1rem; }
 .prose a { white-space: normal; }
 .skip-link {

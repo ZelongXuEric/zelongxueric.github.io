@@ -9,7 +9,7 @@ const publications = sortForDisplay(await getCollection('publications'));
 ---
 <section id="research" class="research" aria-labelledby="research-title">
   <span id="publications" aria-hidden="true"></span>
-  <h2 id="research-title">Research</h2>
+  <h2 class="section-title" id="research-title">Research</h2>
   <ol class="research__list" role="list">
     {publications.map((pub) => <Publication pub={pub} me={me} />)}
   </ol>
@@ -17,6 +17,5 @@ const publications = sortForDisplay(await getCollection('publications'));
 
 <style>
   .research { margin-top: 36px; }
-  h2 { font-size: 21px; padding-bottom: 9px; border-bottom: 1px solid var(--rule); margin-bottom: 22px; }
   .research__list { list-style: none; padding: 0; margin: 0; display: grid; gap: 29px; }
 </style>

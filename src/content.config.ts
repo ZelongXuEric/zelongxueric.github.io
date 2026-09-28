@@ -22,7 +22,13 @@ const profile = defineCollection({
         url: z.string().nullish(),
         icon: z.enum(['mail', 'file', 'scholar', 'github', 'orcid', 'linkedin', 'x', 'link']).default('link'),
       })),
-      repo: z.url().nullish(),
+      beyond: z.array(z.object({
+        title: z.string(),
+        text: z.string(),
+        image: image(),
+        imageAlt: z.string(),
+        link: z.object({ label: z.string(), url: z.url() }).nullish(),
+      })).default([]),
     }),
 });
 

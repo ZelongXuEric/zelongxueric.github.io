@@ -31,4 +31,16 @@ links:
     url: ""
     icon: scholar
 
-repo: https://github.com/ZelongXuEric/zelongxueric.github.io
+# Photo cards below the research list. Images are 4:5 crops.
+beyond:
+  - title: Climbing
+    text: "I love modern, comp-style bouldering and sometimes climb outdoors. Pictured: top-roping at Devil's Lake near Madison, with my blue shark chalk bag."
+    image: ./beyond/climbing.jpg
+    imageAlt: Zelong top-rope climbing a quartzite face at Devil's Lake, a blue shark-shaped chalk bag clipped to the harness.
+  - title: Cooking
+    text: I cook across many cuisines, focusing on Cantonese, Fujian, Sichuan, and official-household (guanfu) Chinese cooking, as well as Edomae Japanese. I share it with 19k followers on my Xiaohongshu (RedNote) food blog.
+    image: ./beyond/cooking.jpg
+    imageAlt: Zelong plating shrimp pasta with tweezers at a kitchen counter.
+    link:
+      label: Xiaohongshu
+      url: https://www.xiaohongshu.com/user/profile/64fc7206000000000500142c
