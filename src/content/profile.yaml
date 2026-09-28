@@ -5,9 +5,8 @@ role: Undergraduate Researcher
 affiliation: University of Wisconsin-Madison
 affiliationShort: UW-Madison
 affiliationUrl: https://www.wisc.edu/
-# Official horizontal W Crest logo (full color, digital) from brand.wisc.edu. It includes the
-# university's name, so it replaces the affiliation text; use it unaltered.
-affiliationLogo: ./uw-logo-horizontal.svg
+# Official W Crest (full color, digital) from brand.wisc.edu.
+affiliationLogo: ./uw-crest.svg
 email: zxu684@wisc.edu
 # City only; shown above the contact links.
 location: Madison, WI
