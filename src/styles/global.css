@@ -19,7 +19,7 @@
   font-weight: 200 900;
   src: url('@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-italic.woff2') format('woff2');
 }
-/* Noto Serif SC (SIL OFL 1.1), subset to the Chinese characters the page uses (徐泽龙小红书). */
+/* Noto Serif SC (SIL OFL 1.1), subset to the three characters of the Chinese name. */
 @font-face {
   font-family: 'Noto Serif SC Name';
   font-style: normal;

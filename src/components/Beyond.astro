@@ -2,6 +2,7 @@
 import { Image, getImage } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import Icon from './Icon.astro';
+import XiaohongshuLogo from './XiaohongshuLogo.astro';
 
 type Item = CollectionEntry<'profile'>['data']['beyond'][number];
 interface Props { items: Item[] }
@@ -45,7 +46,10 @@ const items = await Promise.all(Astro.props.items.map(async (item) => ({
             <p class="beyond__caption"><strong>{item.title}.</strong> {item.text}</p>
             {item.aside && (
               <a class="beyond__aside" href={item.aside.url}>
-                <span class="beyond__aside-label">{item.aside.label} <span class="beyond__aside-zh" lang="zh-CN">{item.aside.platform}</span></span>
+                <span class="beyond__aside-label">{item.aside.label}</span>
+                {item.aside.logo === 'xiaohongshu'
+                  ? <XiaohongshuLogo label={item.aside.platform} class="beyond__aside-logo" />
+                  : <span class="beyond__aside-platform">{item.aside.platform}</span>}
                 {item.aside.detail && <span class="beyond__aside-detail">{item.aside.detail}</span>}
                 <Icon name="arrow" class="beyond__aside-icon" />
               </a>
@@ -118,7 +122,9 @@ const items = await Promise.all(Astro.props.items.map(async (item) => ({
   .beyond__aside { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin-top: 12px; text-decoration: none; }
   .beyond__aside::before { content: ''; align-self: center; width: 18px; height: 1px; background: var(--accent); }
   .beyond__aside-label { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--ink); text-decoration: underline transparent; text-underline-offset: 0.2em; transition: text-decoration-color 120ms ease; }
-  .beyond__aside-zh { font-family: var(--serif-zh); font-style: normal; font-weight: 600; letter-spacing: 0.06em; color: var(--accent); }
+  .beyond__aside-platform { font-family: var(--serif); font-weight: 600; color: var(--accent); }
+  .beyond__aside :global(.beyond__aside-logo) { align-self: center; height: 21px; width: auto; border-radius: 4px; transition: transform 200ms ease; }
+  .beyond__aside:hover :global(.beyond__aside-logo) { transform: rotate(-3deg) scale(1.04); }
   .beyond__aside-detail { font-size: 11.5px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .beyond__aside :global(.beyond__aside-icon) { align-self: center; width: 14px; height: 14px; color: var(--accent); transition: transform 200ms ease; }
   .beyond__aside:hover .beyond__aside-label { text-decoration-color: var(--accent); }
@@ -144,6 +150,7 @@ const items = await Promise.all(Astro.props.items.map(async (item) => ({
     .beyond__dots button { width: 5px; height: 5px; }
     .beyond__caption { font-size: 14px; }
     .beyond__aside-label { font-size: 16px; }
+    .beyond__aside :global(.beyond__aside-logo) { height: 19px; }
   }
   @media print { .beyond { display: none; } }
 </style>

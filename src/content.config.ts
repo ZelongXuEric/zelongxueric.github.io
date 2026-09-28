@@ -34,6 +34,8 @@ const profile = defineCollection({
         aside: z.object({
           label: z.string(),
           platform: z.string(),
+          // Draw the platform's wordmark instead of its name.
+          logo: z.enum(['xiaohongshu']).nullish(),
           detail: z.string().nullish(),
           url: z.url(),
         }).nullish(),

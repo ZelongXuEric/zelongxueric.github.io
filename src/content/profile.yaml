@@ -32,7 +32,7 @@ links:
     icon: scholar
 
 # Rows below the research list. Each square frame cycles through its photos; `position`
-# sets the crop's focal point. Clicking a frame opens the full photos.
+# sets the crop's focal point. Clicking a frame opens the full photos with `alt` as caption.
 beyond:
   - title: Climbing
     text: I love modern, comp-style bouldering and sometimes climb outdoors. I'm hoping to send my first V10 next year.
@@ -41,40 +41,44 @@ beyond:
         alt: Bouldering on an indoor overhang.
         position: 50% 40%
       - image: ./beyond/climbing.jpg
-        alt: Top-roping at Devil's Lake near Madison, with a blue shark chalk bag.
+        alt: Top-roping at Devil's Lake near Madison.
         position: 50% 25%
+      - image: ./beyond/climbing3.jpg
+        alt: Battling it out on the Kilter Board.
+        position: 50% 45%
   - title: Cooking
     text: I cook across many cuisines, focusing on new Chinese cuisine, Modernist Cuisine, and Edomae Japanese. I also dabble in French pastry and baking.
     photos:
+      - image: ./beyond/cooking2.jpg
+        alt: Six new Chinese dishes, cooked for guests.
+      - image: ./beyond/cooking8.jpg
+        alt: Home-style braised large yellow croaker (jia shao) with rice cakes.
+        position: 60% 50%
       - image: ./beyond/cooking.jpg
         alt: Plating shrimp pasta with tweezers.
         position: 50% 78%
       - image: ./beyond/cooking3.jpg
-        alt: Glazed pork belly with a golden leaf garnish.
+        alt: Glazed pork belly (char siu) with a golden leaf garnish.
         position: 55% 50%
       - image: ./beyond/cooking6.jpg
         alt: Fish, uni, and roe laid out for Edomae-style prep.
         position: 45% 50%
       - image: ./beyond/cooking11.jpg
-        alt: A plated course with seared slices and sauce dots.
+        alt: Dry-aged duck with candied kumquats, blackcurrants, and a Provençal sauce.
       - image: ./beyond/cooking7.jpg
-        alt: Sliced poached chicken.
+        alt: White-cut sunflower chicken (bai qie ji), a Cantonese poached chicken.
       - image: ./beyond/cooking12.jpg
-        alt: A plated rack of lamb.
+        alt: Herb-crusted rack of lamb with potato pavé and demi-glace.
       - image: ./beyond/cooking9.jpg
-        alt: Braised duck with romanesco.
+        alt: Eight-treasure gourd duck, a classic of Huaiyang cuisine.
       - image: ./beyond/cooking4.jpg
-        alt: A sliced pastry-wrapped roll.
-      - image: ./beyond/cooking8.jpg
-        alt: A whole fish in golden broth.
-        position: 60% 50%
+        alt: Black-gold crispy short ribs wrapped in pastry.
       - image: ./beyond/cooking10.jpg
-        alt: A clay-pot braise with rosemary.
+        alt: Traditional Cantonese braised lamb belly with winter bamboo shoots and shiitake.
         position: 45% 50%
-      - image: ./beyond/cooking2.jpg
-        alt: Six home-style Chinese dishes.
     aside:
       label: Recipes on
-      platform: 小红书
+      platform: Xiaohongshu
+      logo: xiaohongshu
       detail: RedNote · 19k followers
       url: https://www.xiaohongshu.com/user/profile/64fc7206000000000500142c

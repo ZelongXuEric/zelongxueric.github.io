@@ -96,19 +96,22 @@ size, e.g. `ffmpeg -i in.mp4 -vf scale=854:-2 -c:v libx264 -preset slow -crf 27
 ## Typography
 
 IBM Plex Sans is the text face. The English name and the Xiaohongshu line use
-Source Serif 4 (roman and italic). Chinese text (`nameZh` and the aside's
-`platform` in `profile.yaml`) uses Noto Serif SC (SIL OFL 1.1), subset to exactly
-the characters 徐泽龙小红书 in `src/assets/fonts/noto-serif-sc-name.woff2` (3.4 KB).
-If that Chinese text changes, regenerate the subset from
+Source Serif 4 (roman and italic). The Chinese name (`nameZh` in `profile.yaml`)
+uses Noto Serif SC (SIL OFL 1.1), subset to exactly 徐泽龙 in
+`src/assets/fonts/noto-serif-sc-name.woff2` (2.5 KB). If the name changes,
+regenerate the subset from
 [NotoSerifSC[wght].ttf](https://github.com/google/fonts/tree/main/ofl/notoserifsc):
 
 ```bash
 pip install fonttools brotli
-pyftsubset 'NotoSerifSC[wght].ttf' --text='徐泽龙小红书' --layout-features='' \
+pyftsubset 'NotoSerifSC[wght].ttf' --text='徐泽龙' --layout-features='' \
   --flavor=woff2 --output-file=src/assets/fonts/noto-serif-sc-name.woff2
 ```
 
 Characters missing from the subset fall back to system Song/Ming fonts.
+
+The Xiaohongshu link shows the platform's wordmark in white on its brand red
+(`src/components/XiaohongshuLogo.astro`, path from Simple Icons, CC0-1.0).
 
 ## Interactions and accessibility
 
