@@ -14,6 +14,7 @@ const profile = defineCollection({
       affiliation: z.string(),
       affiliationShort: z.string().nullish(),
       affiliationUrl: z.url().nullish(),
+      affiliationLogo: image().nullish(),
       email: z.email(),
       description: z.string(),
       status: z.string().nullish(),
