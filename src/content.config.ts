@@ -8,6 +8,7 @@ const profile = defineCollection({
     z.object({
       name: z.string(),
       nameZh: z.string().nullish(),
+      location: z.string().nullish(),
       photo: image().nullish(),
       role: z.string(),
       affiliation: z.string(),
@@ -45,6 +46,8 @@ const publications = defineCollection({
     summary: z.string().nullish(),
     image: image().nullish(),
     imageAlt: z.string().nullish(),
+    // Site-relative or absolute MP4 URL; `image` becomes its poster frame.
+    video: z.string().nullish(),
     arxiv: z.string().nullish(),
     pdf: z.string().nullish(),
     code: z.string().nullish(),
@@ -58,6 +61,9 @@ const publications = defineCollection({
   ).refine(
     ({ image, imageAlt }) => !image || !!imageAlt?.trim(),
     { message: 'A figure needs imageAlt describing what it shows.', path: ['imageAlt'] },
+  ).refine(
+    ({ image, video }) => !video || !!image,
+    { message: 'A video needs an image to use as its poster frame.', path: ['image'] },
   ),
 });
 

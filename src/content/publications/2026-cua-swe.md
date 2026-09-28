@@ -20,6 +20,7 @@ status: under-review
 year: 2026
 order: 2
 summary: "A benchmark for agents that edit code and interact with running software, with deterministic tests across web, game, mobile, and DevOps tasks."
-image: ./figures/2026-cua-swe.png
-imageAlt: "CUA-SWE loop: given buggy software across several task domains, an agent edits code, takes screenshots, interacts with the running application, and revises its changes."
+image: ./figures/2026-cua-swe-poster.png
+video: /media/cua-swe-demo.mp4
+imageAlt: "CUA-SWE demo: an agent replays a failing game, inspects screenshots of the broken state, patches the code, and replays the same actions to a passing outcome."
 ---

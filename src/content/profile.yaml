@@ -6,6 +6,8 @@ affiliation: University of Wisconsin-Madison
 affiliationShort: UW-Madison
 affiliationUrl: https://www.wisc.edu/
 email: zxu684@wisc.edu
+# City only; shown above the contact links.
+location: Madison, WI
 photo: ./portrait.jpg
 
 description: >-

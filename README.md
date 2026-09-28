@@ -18,12 +18,13 @@ npm run preview
 
 | File | Purpose |
 | --- | --- |
-| `src/content/profile.yaml` | Identity, affiliation, application status, profile links |
+| `src/content/profile.yaml` | Identity, city, affiliation, application status, profile links |
 | `src/content/about.md` | Two short introductory paragraphs |
 | `src/content/portrait.jpg` | Square portrait crop (subject left of center), optimized at build time and shown as a circle |
 | `src/content/publications/*.md` | One research item per file |
 | `src/content/publications/figures/` | One figure per paper, optimized at build time |
 | `public/files/` | Publicly downloadable CV and other files |
+| `public/media/` | Figure videos (MP4) |
 
 Content is validated by `src/content.config.ts`. Empty profile or paper links are
 omitted rather than displayed as disabled controls. Put detailed education,
@@ -44,6 +45,7 @@ order: 1                          # lower values appear first; defaults to 100
 summary: "One sentence explaining what the title does not."
 image: ./figures/paper.png         # optional; shown beside the entry
 imageAlt: "What the figure shows" # required whenever image is set
+video: /media/paper.mp4           # optional; plays in place of the figure, image is its poster
 arxiv: "2606.07678"                # optional; derives a public paper link
 pdf: /files/paper.pdf             # optional; URLs or site-relative paths
 code: https://github.com/example  # optional
@@ -80,6 +82,14 @@ whole dense figure. Render the PDF at about 300 dpi, trim the white margin, and
 save a PNG at least 400 px wide. Figures sit in a 16:10 white frame on desktop
 and span the column above the entry on mobile. Only add figures from work that
 is cleared for public display.
+
+A `video` replaces the still figure in the same frame, with `image` as its
+poster frame and `imageAlt` as its label. Videos are muted, loop, and load only
+when they scroll into view; they play automatically only when the visitor has
+not asked for reduced motion (otherwise, and without JavaScript, native
+controls are shown). Keep them small: an H.264 MP4 at 854x480 is plenty at this
+size, e.g. `ffmpeg -i in.mp4 -vf scale=854:-2 -c:v libx264 -preset slow -crf 27
+-pix_fmt yuv420p -movflags +faststart -an public/media/out.mp4`.
 
 ## Typography
 
@@ -118,8 +128,14 @@ The existing GitHub Actions workflow builds and deploys pushes to `main`.
 Local changes do not publish anything until committed and pushed.
 
 `astro.config.mjs` contains the canonical site URL. Site-relative resource links
-respect Astro's base path. The existing favicon, social preview, structured data,
-canonical links, robots file, and sitemap remain in place.
+respect Astro's base path. Structured data, canonical links, the robots file,
+and the sitemap are generated.
+
+`public/favicon.svg` is a Source Serif 4 "Z" outlined to a path, so it renders
+without web fonts; `public/apple-touch-icon.png` is the same mark without
+rounded corners. `public/og.png` (1200x630) is a static social preview with the
+name, affiliation, research topics, and portrait. Regenerate it when any of those
+change.
 
 ## Layout
 
@@ -131,7 +147,7 @@ src/components/Publication.astro   Figure, paper metadata, native disclosures
 src/components/Footer.astro        Source link
 src/layouts/Base.astro             Document metadata and skip link
 src/pages/index.astro              Two-column layout
-src/scripts/ui.ts                  Clipboard feedback only
+src/scripts/ui.ts                  Clipboard feedback, figure video playback
 src/styles/global.css             Typography, colors, responsive layout
 src/assets/fonts/                  Chinese name font subset
 ```
