@@ -1,125 +1,152 @@
 ---
 import { render } from 'astro:content';
+import { Image } from 'astro:assets';
 import Icon from './Icon.astro';
 import { arxivUrl, bibtex, doiUrl, isSameAuthor, primaryUrl, type Publication } from '../lib/publications';
+import { withBase } from '../lib/url';
 
 interface Props { pub: Publication; me: string }
 const { pub, me } = Astro.props;
 const d = pub.data;
 const { Content } = await render(pub);
 const hasAbstract = (pub.body ?? '').trim().length > 0;
+const resolveUrl = (url: string) => url.startsWith('/') ? withBase(url) : url;
 const titleUrl = primaryUrl(pub);
+const citation = bibtex(pub);
+const paperUrl = d.pdf || (d.arxiv ? arxivUrl(d.arxiv) : null) || (d.doi ? doiUrl(d.doi) : null);
 const links = [
-  d.arxiv ? { label: 'arXiv', url: arxivUrl(d.arxiv) } : null,
-  d.pdf ? { label: 'PDF', url: d.pdf } : null,
+  paperUrl ? { label: 'Paper', url: paperUrl } : null,
   d.code ? { label: 'Code', url: d.code } : null,
-  d.project ? { label: 'Project page', url: d.project } : null,
-  d.doi ? { label: 'DOI', url: doiUrl(d.doi) } : null,
+  d.project ? { label: 'Project', url: d.project } : null,
 ].filter((link): link is { label: string; url: string } => link !== null);
 const bibId = `bibtex-${pub.id}`;
+const titleId = `title-${pub.id}`;
+const contributionNoteId = `contribution-${pub.id}`;
+const status = d.status === 'under-review' ? 'Under review' : d.status === 'published' ? d.venue : 'Preprint';
+const venue = status?.includes(String(d.year)) ? status : `${status || 'Published'} · ${d.year}`;
 ---
-<li class:list={['pub', { 'pub--selected': d.selected }]}>
-  <h4 class="pub__title">
-    {titleUrl ? <a href={titleUrl} target="_blank" rel="noopener noreferrer">{d.title}</a> : d.title}
-  </h4>
-  <p class="pub__authors">
-    {d.authors.map((author, i) => (
-      <><span class:list={{ pub__me: isSameAuthor(author, me) }}>{author}</span>{i < d.authors.length - 1 && ', '}</>
-    ))}
-  </p>
-  <p class="pub__venue">
-    <span class="pub__venue-name">{d.venue ?? 'Preprint'}</span>
-    {d.arxiv && <span>arXiv:{d.arxiv}</span>}
-    {d.note && <span class="pub__note">{d.note}</span>}
-  </p>
-  <div class="pub__actions">
-    {links.map((link) => (
-      <a class="chip chip--sm" href={link.url} target="_blank" rel="noopener noreferrer">{link.label}<Icon name="arrow" /></a>
-    ))}
-    {hasAbstract && (
-      <details class="pub__details">
-        <summary class="chip chip--sm">Abstract<Icon name="chevron" /></summary>
-        <div class="pub__panel pub__abstract prose"><Content /></div>
-      </details>
+<li class:list={['pub', { 'pub--figure': d.image }]} aria-labelledby={titleId}>
+  {d.image && (
+    <div class="pub__figure">
+      <Image src={d.image} alt={d.imageAlt ?? ''} widths={[200, 400, 640]}
+        sizes="(max-width: 760px) min(calc(100vw - 40px), 460px), 200px"
+        format="webp" quality={90} loading="lazy" decoding="async" />
+    </div>
+  )}
+  <div class="pub__body">
+    <h3 class="pub__title" id={titleId}>
+      {titleUrl ? <a href={resolveUrl(titleUrl)}>{d.title}</a> : d.title}
+    </h3>
+    {d.authors.length > 0 && (
+      <p class="pub__authors">
+        {d.authors.map((author, i) => (
+          <><span class:list={['pub__author', { pub__me: isSameAuthor(author, me) }]}>{author}{d.equalContribution.includes(author) && <sup class="pub__equal" aria-describedby={contributionNoteId}>*</sup>}</span>{i < d.authors.length - 1 && ', '}</>
+        ))}
+      </p>
     )}
-    <details class="pub__details">
-      <summary class="chip chip--sm">BibTeX<Icon name="chevron" /></summary>
-      <div class="pub__panel">
-        <pre class="pub__bibtex" tabindex="0"><code id={bibId}>{bibtex(pub)}</code></pre>
-        <button type="button" class="copy pub__copy" data-copy-target={bibId}>
-          <Icon name="copy" /><span data-copy-label>Copy</span>
-        </button>
+    {d.equalContribution.length > 0 && (
+      <p class="pub__contribution" id={contributionNoteId}>* Equal contribution (co-first authors).</p>
+    )}
+    <p class="pub__meta">
+      <span class:list={{ pub__venue: d.status === 'published' }}>{venue}</span>
+      {d.note && <span>{d.note}</span>}
+    </p>
+    {d.summary && <p class="pub__summary">{d.summary}</p>}
+    {(links.length > 0 || hasAbstract || citation) && (
+      <div class="pub__resources">
+        {links.map((link) => <a href={resolveUrl(link.url)}>[{link.label}]</a>)}
+        {hasAbstract && (
+          <details class="pub__details" name={`details-${pub.id}`}>
+            <summary>[Abstract]</summary>
+            <div class="pub__panel prose"><Content /></div>
+          </details>
+        )}
+        {citation && (
+          <details class="pub__details" name={`details-${pub.id}`}>
+            <summary>[BibTeX]</summary>
+            <div class="pub__panel pub__citation">
+              <div class="pub__copy-row">
+                <span class="pub__copy-feedback" role="status" aria-live="polite"></span>
+                <button class="pub__copy" type="button" aria-label="Copy BibTeX" data-copy-target={bibId} hidden>
+                  <Icon name="copy" /><span class="pub__tooltip" aria-hidden="true">Copy BibTeX</span>
+                </button>
+              </div>
+              <pre class="pub__bibtex" tabindex="0" aria-label={`BibTeX for ${d.title}`}><code id={bibId}>{citation}</code></pre>
+            </div>
+          </details>
+        )}
       </div>
-    </details>
+    )}
   </div>
 </li>
 
 <style>
-  .pub { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.55rem; }
-  .pub__title { font-size: clamp(1.3rem, 1.15rem + 0.6vw, 1.6rem); line-height: 1.2; }
-  .pub__title a { text-decoration: none; }
-  .pub__title a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
-  .pub__authors { font-size: 0.95rem; line-height: 1.5; color: var(--ink-2); }
-  .pub__me {
-    font-weight: 600;
-    color: var(--ink);
-    text-decoration: underline;
-    text-decoration-color: var(--accent);
-    text-decoration-thickness: 1.5px;
-    text-underline-offset: 0.2em;
-  }
-  .pub__venue {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem 1rem;
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--ink-3);
-  }
-  .pub__venue-name { font-weight: 500; color: var(--ink); }
-  .pub__note { color: var(--accent); }
-  .pub__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
-  .pub__details { min-width: 0; }
-  .pub__details[open] { flex-basis: 100%; }
-  summary { list-style: none; }
-  summary::-webkit-details-marker { display: none; }
-  summary :global(svg) { transition: transform 0.25s var(--ease-out); }
-  .pub__details[open] summary { border-color: var(--accent); color: var(--accent); }
-  .pub__details[open] summary :global(svg) { transform: rotate(180deg); color: var(--accent); }
-  .pub__panel {
-    position: relative;
-    margin-top: 0.9rem;
-    padding: 1.1rem 1.25rem;
+  .pub { min-width: 0; break-inside: avoid; }
+  .pub--figure { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 0 28px; align-items: start; }
+  .pub__body { min-width: 0; }
+  .pub__figure :global(img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    object-fit: contain;
+    padding: 8px;
+    margin-top: 4px;
+    background: #fff;
     border: 1px solid var(--rule);
-    border-radius: 8px;
-    background: var(--bg-elev);
-    animation: panel 0.35s var(--ease-out);
+    border-radius: 4px;
   }
-  @keyframes panel { from { opacity: 0; transform: translateY(-4px); } }
-  .pub__abstract { max-width: 72ch; font-size: 1.05rem; line-height: 1.55; color: var(--ink-2); }
-  .pub__bibtex {
-    margin: 0;
-    padding-right: 5rem;
-    overflow-x: auto;
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    line-height: 1.55;
-    color: var(--ink-2);
+  .pub__title { font-size: 16px; line-height: 1.5; font-weight: 600; overflow-wrap: anywhere; }
+  .pub__title a { text-decoration: none; }
+  .pub__title a:hover { text-decoration: underline; }
+  .pub__authors { font-size: 14px; line-height: 1.65; color: var(--muted); margin-top: 3px; }
+  .pub__author { display: inline-block; max-width: 100%; }
+  .pub__me { font-weight: 600; color: var(--ink); }
+  .pub__equal { position: relative; top: -0.4em; font-size: 0.75em; line-height: 0; font-weight: 400; vertical-align: baseline; }
+  .pub__contribution { margin-top: 2px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+  .pub__meta { display: flex; flex-wrap: wrap; column-gap: 9px; font-size: 14px; color: var(--muted); margin-top: 3px; }
+  .pub__meta span + span::before { content: '/'; margin-right: 9px; color: var(--muted); }
+  .pub__venue { color: var(--ink); font-weight: 500; }
+  .pub__summary { font-size: 15px; line-height: 1.6; margin-top: 5px; }
+  .pub__resources { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 12px; margin-top: 5px; font-size: 14px; }
+  .pub__resources > a, summary { min-height: 28px; display: inline-flex; align-items: center; }
+  .pub__resources > a { text-decoration: none; }
+  .pub__resources > a:hover { text-decoration: underline; }
+  .pub__details, .pub__details::details-content { display: contents; }
+  .pub__details:not([open]) > .pub__panel { display: none; }
+  summary {
+    list-style: none;
+    color: var(--accent);
+    cursor: pointer;
+    text-underline-offset: 0.16em;
+    transition: color 120ms ease, text-decoration-color 120ms ease;
   }
-  .pub__copy { position: absolute; top: 0.75rem; right: 0.75rem; }
-  @media (min-width: 700px) {
-    .pub--selected::before {
-      content: '';
-      position: absolute;
-      top: 0.6rem;
-      left: -1.25rem;
-      width: 0.4rem;
-      height: 0.4rem;
-      border-radius: 50%;
-      background: var(--accent);
-    }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover, .pub__details[open] summary { color: var(--accent-hover); text-decoration: underline; }
+  .pub__panel {
+    order: 1;
+    flex: 0 0 100%;
+    min-width: 0;
+    margin: 8px 0 0;
+    padding: 0 0 0 16px;
+    border-left: 2px solid var(--rule);
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.65;
   }
-  @media (prefers-reduced-motion: reduce) {
-    .pub__panel { animation: none; }
+  .pub__details[open] > .pub__panel { animation: disclosure 160ms ease-out; }
+  @keyframes disclosure { from { opacity: 0; } to { opacity: 1; } }
+  .pub__copy-row { display: flex; justify-content: flex-end; align-items: center; gap: 10px; min-height: 36px; }
+  .pub__copy-feedback { font-size: 12px; }
+  .pub__copy { position: relative; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; background: transparent; color: var(--muted); border: 0; border-radius: 3px; }
+  .pub__copy[hidden] { display: none; }
+  .pub__copy:hover { color: var(--accent); background: #f3f6f6; }
+  .pub__tooltip { position: absolute; bottom: calc(100% + 5px); right: 0; width: max-content; padding: 3px 7px; background: var(--ink); color: white; border-radius: 3px; font-size: 12px; pointer-events: none; visibility: hidden; }
+  .pub__copy:hover .pub__tooltip, .pub__copy:focus-visible .pub__tooltip { visibility: visible; }
+  .pub__bibtex { margin: 0; padding-bottom: 5px; max-width: 100%; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12px; line-height: 1.6; tab-size: 2; }
+  @media (max-width: 760px) {
+    .pub__resources > a, summary { min-height: 36px; }
+    .pub--figure { grid-template-columns: minmax(0, 1fr); }
+    .pub__figure { max-width: 460px; margin-bottom: 12px; }
+    .pub__figure :global(img) { margin-top: 0; }
   }
 </style>

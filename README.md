@@ -1,108 +1,137 @@
-# Zelong Xu — research homepage
+# Zelong Xu - research homepage
 
-Static academic homepage built with [Astro](https://astro.build). There is no backend and no
-framework JavaScript; content is kept apart from the layout, so updating the site means editing a
-few files in `src/content/`.
+A static academic homepage built with Astro. The page consists of a compact profile
+sidebar, a short biography, and one ordered research list. There is no backend or
+client-side framework. The portrait, paper figures, and fonts are served locally.
 
-## Quick start
+## Development
 
 ```bash
 npm install
 npm run dev       # http://localhost:4321
-npm run build     # static site in dist/
-npm run preview   # serve dist/ locally
+npm test          # Node 22.6+; publication ordering, author matching, citation logic
+npm run build     # static output in dist/
+npm run preview
 ```
 
-## Where the content lives
+## Content
 
-| File | What it controls |
+| File | Purpose |
 | --- | --- |
-| `src/content/profile.yaml` | Name, role, tagline, status line, links, research interests, education, contact note |
-| `src/content/about.md` | Bio (Markdown) |
-| `src/content/portrait.webp` | Portrait shown beside the bio (referenced by `photo:` in `profile.yaml`; remove that line to hide it) |
-| `src/content/news.yaml` | Dated updates shown next to the bio |
-| `src/content/publications/*.md` | One file per paper — frontmatter is the metadata, the body is the abstract |
-| `public/files/` | CV PDF and other static files (served at `/files/...`) |
+| `src/content/profile.yaml` | Identity, affiliation, application status, profile links |
+| `src/content/about.md` | Two short introductory paragraphs |
+| `src/content/portrait.jpg` | Square portrait crop (subject left of center), optimized at build time and shown as a circle |
+| `src/content/publications/*.md` | One research item per file |
+| `src/content/publications/figures/` | One figure per paper, optimized at build time |
+| `public/files/` | Publicly downloadable CV and other files |
 
-Every file is validated against `src/content.config.ts` at build time, so a missing or misspelled
-field fails the build with a readable error rather than rendering something broken.
+Content is validated by `src/content.config.ts`. Empty profile or paper links are
+omitted rather than displayed as disabled controls. Put detailed education,
+courses, skills, and older experience in the CV, not separate homepage sections.
 
-## Adding a publication
+## Research entries
 
-Create `src/content/publications/<year>-<short-name>.md`. Only publicly available work belongs
-here (conference / workshop / journal papers and arXiv preprints).
-
-```markdown
+```yaml
 ---
-title: "Paper title"              # quote titles that contain a colon
+title: "Paper title"
 authors:
   - First Author
-  - Zelong Xu                      # highlighted automatically ("Zelong Xu*" also matches)
-venue: Findings of EMNLP 2026      # omit for a preprint
+  - Zelong Xu
+status: published                 # published | preprint | under-review
+venue: Findings of EMNLP 2026     # actual publication venue, not submission venue
 year: 2026
-date: 2026-06-04                   # optional; orders papers within a year
-arxiv: "2606.07678"                # optional; keep quoted. Links to arXiv are derived from it
-pdf: https://arxiv.org/pdf/2606.07678   # optional; any URL or /files/paper.pdf
-code: https://github.com/...       # optional
-project: https://...               # optional
-doi: 10.18653/v1/...               # optional
-note: Oral                         # optional highlight shown next to the venue
-bibtex: |                          # optional; generated from the fields above when omitted
-  @inproceedings{...}
-selected: true                     # marks the paper in the list
+order: 1                          # lower values appear first; defaults to 100
+summary: "One sentence explaining what the title does not."
+image: ./figures/paper.png         # optional; shown beside the entry
+imageAlt: "What the figure shows" # required whenever image is set
+arxiv: "2606.07678"                # optional; derives a public paper link
+pdf: /files/paper.pdf             # optional; URLs or site-relative paths
+code: https://github.com/example  # optional
+project: https://example.com      # optional
+doi: 10.1234/example              # optional
 ---
 
-The abstract goes here (Markdown). Leave the body empty to hide the "Abstract" toggle.
+Optional abstract in Markdown.
 ```
 
-Papers are grouped by year, newest first. The title links to arXiv, then PDF, DOI or project page,
-whichever exists first.
+The author list must be complete and confirmed, in the paper's original order.
+The profile owner's name is bold. For confirmed co-first authors, add an
+`equalContribution` list containing their exact names from `authors`. These names
+receive superscript asterisks and a small explanation below that paper's author
+list. Author order is unchanged, and citation names never include these markers.
+No separate first-author badges are shown. When the list is not available, omit `authors`;
+no BibTeX is generated from an unknown author list. A hand-written `bibtex`
+field can override the generated citation.
 
-## Updating other things
+Author lists for the three September 2026 works have been checked against the
+uploaded manuscripts. Their public resource links can be added when available.
+Only include work that is cleared for public display. Under-review work is
+explicitly labeled, never presented as accepted at its submission venue.
+Published venues use the darker text color; other statuses stay gray.
 
-- **Bio** — edit `src/content/about.md`.
-- **Photo** — replace `src/content/portrait.webp` (any size; it is resized and converted at build time). A 4:5 head-and-shoulders crop looks best.
-- **Research interests** — the `interests` list in `profile.yaml` (shown in the hero and the Research section).
-- **CV** — copy the PDF to `public/files/Zelong_Xu_CV.pdf` and set the CV link's `url` to `/files/Zelong_Xu_CV.pdf`.
-- **Links** — the `links` list in `profile.yaml`; order is display order. Icons: `mail`, `file`,
-  `scholar`, `github`, `orcid`, `linkedin`, `x`, `link`. An empty `url` renders as a disabled placeholder.
-- **News** — add an entry to `src/content/news.yaml` (date as `YYYY-MM` or `YYYY-MM-DD`).
-- **Social preview image** — `public/og.png` is a static 1200×630 image; replace it if the name or tagline changes.
+Entries sort by `order`, then newest first using optional `date` or `year`.
+There are no year groups, badges, filters, or duplicated news announcements.
 
-## Deploying to GitHub Pages
+## Figures
 
-1. Create a GitHub repository. To serve the site at `https://<username>.github.io`, name the
-   repository `<username>.github.io`. (For a project repository the site lives at
-   `https://<username>.github.io/<repo>/`; then also set `base: '/<repo>'` in `astro.config.mjs`.)
-2. Set `site` in `astro.config.mjs` and the `Sitemap:` URL in `public/robots.txt` to the final URL.
-3. Push the code:
-   ```bash
-   git add -A
-   git commit -m "Initial site"
-   git remote add origin git@github.com:<username>/<repo>.git
-   git push -u origin main
-   ```
-4. On GitHub open **Settings → Pages** and set **Build and deployment → Source** to
-   **GitHub Actions**. The workflow in `.github/workflows/deploy.yml` builds and deploys the site on
-   every push to `main`.
+Each figure is a crop of a real figure from the paper, not a decorative image.
+Crop a part that stays recognizable at 200 px wide instead of shrinking a
+whole dense figure. Render the PDF at about 300 dpi, trim the white margin, and
+save a PNG at least 400 px wide. Figures sit in a 16:10 white frame on desktop
+and span the column above the entry on mobile. Only add figures from work that
+is cleared for public display.
 
-## Before going live
+## Typography
 
-- [ ] Add the CV (`public/files/Zelong_Xu_CV.pdf`) and set its link in `profile.yaml`
-- [ ] Set the Google Scholar URL in `profile.yaml`
-- [ ] Confirm the date of the EMNLP acceptance in `src/content/news.yaml`
-- [ ] Read through `about.md`, the `tagline`, `interests` and `contactNote` — they are drafts written from the profile information
+IBM Plex Sans is the text face. The English name uses Source Serif 4. The Chinese
+name (`nameZh` in `profile.yaml`) uses Noto Serif SC (SIL OFL 1.1), subset to
+exactly those three characters in `src/assets/fonts/noto-serif-sc-name.woff2`
+(2.5 KB). If `nameZh` changes, regenerate the subset from
+[NotoSerifSC[wght].ttf](https://github.com/google/fonts/tree/main/ofl/notoserifsc):
 
-## Project structure
-
+```bash
+pip install fonttools brotli
+pyftsubset 'NotoSerifSC[wght].ttf' --text='徐泽龙' --layout-features='' \
+  --flavor=woff2 --output-file=src/assets/fonts/noto-serif-sc-name.woff2
 ```
-src/
-  content/            ← everything editable
-    content.config.ts ← schemas for the content files
-  components/         ← one component per page section
-  layouts/Base.astro  ← <head>, metadata, nav, footer
-  pages/index.astro   ← assembles the sections
-  scripts/            ← theme toggle, reveal-on-scroll, copy buttons, hero figure
-  styles/global.css   ← design tokens and shared styles
-public/               ← static files copied as-is (favicon, og.png, robots.txt, files/)
+
+Characters missing from the subset fall back to system Song/Ming fonts.
+
+## Interactions and accessibility
+
+- Native Abstract and BibTeX disclosures work without JavaScript.
+- Only one disclosure per paper opens at a time; content fades in for 160 ms.
+- Link color changes take 120 ms. Reduced-motion preferences disable both effects.
+- Clipboard controls announce success or select the citation if access is denied.
+- Keyboard focus, a skip link, mobile layout, and print styles are included.
+
+## CV and deployment
+
+The CV link is configured in `profile.yaml`; keep it in sync with the filename
+in `public/files/`. **Everything in `public/` is copied into the deployed site,
+including files that are not linked.** Remove private addresses, phone numbers,
+and unpublished material from any version intended for deployment.
+
+The GitHub repository is
+[ZelongXuEric/zelongxueric.github.io](https://github.com/ZelongXuEric/zelongxueric.github.io).
+The existing GitHub Actions workflow builds and deploys pushes to `main`.
+Local changes do not publish anything until committed and pushed.
+
+`astro.config.mjs` contains the canonical site URL. Site-relative resource links
+respect Astro's base path. The existing favicon, social preview, structured data,
+canonical links, robots file, and sitemap remain in place.
+
+## Layout
+
+```text
+src/components/Profile.astro       Portrait, English and Chinese name, contact links
+src/components/About.astro         Short bio and application status
+src/components/Publications.astro  Research heading and ordered list
+src/components/Publication.astro   Figure, paper metadata, native disclosures
+src/components/Footer.astro        Source link
+src/layouts/Base.astro             Document metadata and skip link
+src/pages/index.astro              Two-column layout
+src/scripts/ui.ts                  Clipboard feedback only
+src/styles/global.css             Typography, colors, responsive layout
+src/assets/fonts/                  Chinese name font subset
 ```

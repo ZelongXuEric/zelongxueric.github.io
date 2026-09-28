@@ -10,6 +10,7 @@ const site = 'https://zelongxueric.github.io';
 export default defineConfig({
   site,
   integrations: [sitemap()],
+  devToolbar: { enabled: false },
   // Classic whitespace handling: keeps single spaces between inline elements
   // (author lists, link rows) instead of Astro 7's JSX-style stripping.
   compressHTML: true,

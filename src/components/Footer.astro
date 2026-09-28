@@ -1,31 +1,11 @@
 ---
-import { formatMonth } from '../lib/format';
-
-interface Props { name: string; repo?: string | null }
-const { name, repo } = Astro.props;
-const now = new Date();
-const updated = formatMonth(now.toISOString().slice(0, 7));
+interface Props { repo?: string | null }
+const { repo } = Astro.props;
 ---
-<footer class="footer">
-  <div class="container footer__inner">
-    <p>© {now.getFullYear()} {name}</p>
-    <p class="footer__meta">
-      <span>Updated {updated}</span>
-      <span>Built with <a href="https://astro.build" rel="noopener noreferrer" target="_blank">Astro</a></span>
-      {repo && <span><a href={repo} rel="noopener noreferrer" target="_blank">Source</a></span>}
-    </p>
-  </div>
-</footer>
+{repo && <footer class="site-footer"><a href={repo}>Source</a></footer>}
 
 <style>
-  .footer {
-    border-top: 1px solid var(--rule);
-    padding-block: 2rem 2.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--ink-3);
-  }
-  .footer__inner { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; justify-content: space-between; }
-  .footer__meta { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; }
-  .footer a { text-decoration-color: var(--rule-strong); }
+  .site-footer { margin-top: 42px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 12px; }
+  a { color: var(--muted); text-decoration: none; }
+  a:hover { text-decoration: underline; }
 </style>

@@ -1,7 +1,3 @@
-I am an undergraduate at the [University of Wisconsin–Madison](https://www.wisc.edu/), where I study Statistics with certificates in Computer Science and Mathematics (B.S. expected January 2027), and work as an undergraduate researcher on machine learning and AI safety.
+I am an undergraduate at the [University of Wisconsin-Madison](https://www.wisc.edu/), studying Statistics with certificates in Computer Science and Mathematics. I have been fortunate to work with [Yang Lu](https://batmen-lab.github.io/), [Yue Zhao](https://viterbi-web.usc.edu/~yzhao010/), and [Xiyang Hu](https://xiyanghu.github.io/).
 
-My research asks a simple question with difficult answers: *how do we know whether an AI system is actually doing what we want?* I approach it from three directions — building evaluations that faithfully measure what agents can and cannot do, developing alignment methods that are robust and data-efficient, and studying how models reason internally so that their failures can be predicted and corrected.
-
-Most recently I contributed to **DOG-DPO**, a training-free data-selection framework for safety alignment that treats preference pairs as geometric signals in a model's representation space (Findings of EMNLP 2026).
-
-Before Madison I studied Finance at Shandong University. I am applying to CS PhD programs for Fall 2027 — if my interests overlap with yours, I would love to hear from you.
+My research focuses on evaluating and understanding language models, with an emphasis on interpretability, agents, and multimodal learning. I am interested in evaluations that reveal model failures and training methods that make their behavior more reliable.

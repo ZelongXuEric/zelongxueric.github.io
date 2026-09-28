@@ -1,23 +1,20 @@
 ---
 import { getEntry } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import Hero from '../components/Hero.astro';
+import Profile from '../components/Profile.astro';
 import About from '../components/About.astro';
-import Research from '../components/Research.astro';
 import Publications from '../components/Publications.astro';
-import Education from '../components/Education.astro';
-import Contact from '../components/Contact.astro';
+import Footer from '../components/Footer.astro';
 
 const profile = (await getEntry('profile', 'profile'))!.data;
-const scholar = profile.links.find((link) => link.icon === 'scholar')?.url;
 ---
 <Base>
-  <Hero profile={profile} />
-  <div class="container">
-    <About profile={profile} />
-    <Research interests={profile.interests} />
-    <Publications me={profile.name} scholar={scholar} />
-    <Education education={profile.education} />
-    <Contact profile={profile} />
+  <div class="site-shell">
+    <Profile profile={profile} />
+    <main id="main" tabindex="-1">
+      <About status={profile.status} />
+      <Publications me={profile.name} />
+      <Footer repo={profile.repo} />
+    </main>
   </div>
 </Base>
