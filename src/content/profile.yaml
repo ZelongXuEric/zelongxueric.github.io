@@ -37,12 +37,12 @@ beyond:
   - title: Climbing
     text: I love modern, comp-style bouldering and sometimes climb outdoors. I'm hoping to send my first V10 next year.
     photos:
-      - image: ./beyond/climbing4.jpg
-        alt: Bouldering on an indoor overhang.
-        position: 50% 40%
       - image: ./beyond/climbing.jpg
         alt: Top-roping at Devil's Lake near Madison.
         position: 50% 25%
+      - image: ./beyond/climbing4.jpg
+        alt: Bouldering on an indoor overhang.
+        position: 50% 40%
       - image: ./beyond/climbing3.jpg
         alt: Battling it out on the Kilter Board.
         position: 50% 45%
@@ -54,23 +54,20 @@ beyond:
       - image: ./beyond/cooking8.jpg
         alt: Home-style braised large yellow croaker (jia shao) with rice cakes.
         position: 60% 50%
-      - image: ./beyond/cooking.jpg
-        alt: Plating shrimp pasta with tweezers.
-        position: 50% 78%
-      - image: ./beyond/cooking3.jpg
-        alt: Glazed pork belly (char siu) with a golden leaf garnish.
-        position: 55% 50%
+      - image: ./beyond/cooking9.jpg
+        alt: Eight-treasure gourd duck, a classic of Huaiyang cuisine.
       - image: ./beyond/cooking6.jpg
         alt: Fish, uni, and roe laid out for Edomae-style prep.
         position: 45% 50%
+      - image: ./beyond/cooking3.jpg
+        alt: Glazed pork belly (char siu) with a golden leaf garnish.
+        position: 55% 50%
       - image: ./beyond/cooking11.jpg
         alt: Dry-aged duck with candied kumquats, blackcurrants, and a Provençal sauce.
       - image: ./beyond/cooking7.jpg
         alt: White-cut sunflower chicken (bai qie ji), a Cantonese poached chicken.
       - image: ./beyond/cooking12.jpg
         alt: Herb-crusted rack of lamb with potato pavé and demi-glace.
-      - image: ./beyond/cooking9.jpg
-        alt: Eight-treasure gourd duck, a classic of Huaiyang cuisine.
       - image: ./beyond/cooking4.jpg
         alt: Black-gold crispy short ribs wrapped in pastry.
       - image: ./beyond/cooking10.jpg
