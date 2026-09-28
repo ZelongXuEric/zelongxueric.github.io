@@ -25,9 +25,18 @@ const profile = defineCollection({
       beyond: z.array(z.object({
         title: z.string(),
         text: z.string(),
-        image: image(),
-        imageAlt: z.string(),
-        link: z.object({ label: z.string(), url: z.url() }).nullish(),
+        photos: z.array(z.object({
+          image: image(),
+          alt: z.string(),
+          // CSS object-position of the square thumbnail crop.
+          position: z.string().default('50% 50%'),
+        })).min(1),
+        aside: z.object({
+          label: z.string(),
+          platform: z.string(),
+          detail: z.string().nullish(),
+          url: z.url(),
+        }).nullish(),
       })).default([]),
     }),
 });

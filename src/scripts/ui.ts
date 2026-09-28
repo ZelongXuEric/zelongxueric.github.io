@@ -1,4 +1,5 @@
-// Native disclosures work without JavaScript; clipboard feedback and figure video playback need it.
+// Native disclosures work without JavaScript; clipboard feedback, figure videos, and the
+// Beyond Research slideshows and photo viewer need it.
 for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy-target]')) {
   button.hidden = false;
   const feedback = button.parentElement?.querySelector<HTMLElement>('[role="status"]');
@@ -48,5 +49,75 @@ if (videos.length && !reduceMotion && 'IntersectionObserver' in window) {
   for (const video of videos) {
     video.controls = false;
     observer.observe(video);
+  }
+}
+
+// Photo viewer for Beyond Research. Without JavaScript, a frame links to its first photo.
+const viewer = document.querySelector<HTMLDialogElement>('dialog.lightbox');
+const viewerImg = viewer?.querySelector<HTMLImageElement>('.lightbox__img');
+const viewerCaption = viewer?.querySelector<HTMLElement>('.lightbox__caption');
+let viewerPhotos: HTMLImageElement[] = [];
+let viewerAt = 0;
+
+const showInViewer = (index: number) => {
+  if (!viewerImg || !viewerCaption) return;
+  viewerAt = (index + viewerPhotos.length) % viewerPhotos.length;
+  const photo = viewerPhotos[viewerAt];
+  viewerImg.src = photo.dataset.full ?? photo.currentSrc;
+  viewerImg.alt = photo.alt;
+  viewerCaption.textContent = `${photo.alt} ${viewerAt + 1} / ${viewerPhotos.length}`;
+};
+
+if (viewer) {
+  const steps = viewer.querySelectorAll<HTMLButtonElement>('[data-step]');
+  for (const button of steps) button.addEventListener('click', () => showInViewer(viewerAt + Number(button.dataset.step)));
+  viewer.querySelector('[data-close]')?.addEventListener('click', () => viewer.close());
+  viewer.addEventListener('click', (event) => { if (event.target === viewer) viewer.close(); });
+  viewer.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') showInViewer(viewerAt - 1);
+    if (event.key === 'ArrowRight') showInViewer(viewerAt + 1);
+  });
+}
+
+// Each frame cycles through its photos while on screen, pausing under the pointer.
+for (const item of document.querySelectorAll<HTMLElement>('[data-slideshow]')) {
+  const frame = item.querySelector<HTMLAnchorElement>('[data-gallery]');
+  if (!frame) continue;
+  const photos = [...frame.querySelectorAll<HTMLImageElement>('img')];
+  const dotGroup = item.querySelector<HTMLElement>('.beyond__dots');
+  const dots = [...(dotGroup?.querySelectorAll<HTMLButtonElement>('button') ?? [])];
+  let at = 0;
+  let hovering = false;
+  let visible = false;
+
+  const show = (index: number) => {
+    photos[at].classList.remove('is-on');
+    dots[at]?.removeAttribute('aria-current');
+    at = index;
+    photos[at].classList.add('is-on');
+    dots[at]?.setAttribute('aria-current', 'true');
+  };
+
+  if (dotGroup) dotGroup.hidden = false;
+  dots.forEach((dot, index) => dot.addEventListener('click', () => show(index)));
+
+  frame.addEventListener('click', (event) => {
+    if (!viewer) return;
+    event.preventDefault();
+    viewerPhotos = photos;
+    for (const button of viewer.querySelectorAll<HTMLButtonElement>('[data-step]')) button.hidden = photos.length < 2;
+    showInViewer(at);
+    viewer.showModal();
+  });
+
+  if (photos.length > 1 && !reduceMotion) {
+    item.addEventListener('pointerenter', () => { hovering = true; });
+    item.addEventListener('pointerleave', () => { hovering = false; });
+    new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }).observe(frame);
+    window.setTimeout(() => {
+      window.setInterval(() => {
+        if (visible && !hovering && !document.hidden && !viewer?.open) show((at + 1) % photos.length);
+      }, 3500);
+    }, Number(item.dataset.delay ?? 0));
   }
 }

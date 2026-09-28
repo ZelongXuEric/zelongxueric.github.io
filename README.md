@@ -21,7 +21,7 @@ npm run preview
 | --- | --- |
 | `src/content/profile.yaml` | Identity, city, affiliation, application status, profile links |
 | `src/content/about.md` | Two short introductory paragraphs |
-| `src/content/beyond/` | 4:5 photo crops for the Beyond Research cards (listed under `beyond` in `profile.yaml`) |
+| `src/content/beyond/` | Photos for the Beyond Research slideshows (listed under `beyond` in `profile.yaml`) |
 | `src/content/portrait.jpg` | Square portrait crop (subject left of center), optimized at build time and shown as a circle |
 | `src/content/publications/*.md` | One research item per file |
 | `src/content/publications/figures/` | One figure per paper, optimized at build time |
@@ -95,15 +95,16 @@ size, e.g. `ffmpeg -i in.mp4 -vf scale=854:-2 -c:v libx264 -preset slow -crf 27
 
 ## Typography
 
-IBM Plex Sans is the text face. The English name uses Source Serif 4. The Chinese
-name (`nameZh` in `profile.yaml`) uses Noto Serif SC (SIL OFL 1.1), subset to
-exactly those three characters in `src/assets/fonts/noto-serif-sc-name.woff2`
-(2.5 KB). If `nameZh` changes, regenerate the subset from
+IBM Plex Sans is the text face. The English name and the Xiaohongshu line use
+Source Serif 4 (roman and italic). Chinese text (`nameZh` and the aside's
+`platform` in `profile.yaml`) uses Noto Serif SC (SIL OFL 1.1), subset to exactly
+the characters 徐泽龙小红书 in `src/assets/fonts/noto-serif-sc-name.woff2` (3.4 KB).
+If that Chinese text changes, regenerate the subset from
 [NotoSerifSC[wght].ttf](https://github.com/google/fonts/tree/main/ofl/notoserifsc):
 
 ```bash
 pip install fonttools brotli
-pyftsubset 'NotoSerifSC[wght].ttf' --text='徐泽龙' --layout-features='' \
+pyftsubset 'NotoSerifSC[wght].ttf' --text='徐泽龙小红书' --layout-features='' \
   --flavor=woff2 --output-file=src/assets/fonts/noto-serif-sc-name.woff2
 ```
 
@@ -114,6 +115,10 @@ Characters missing from the subset fall back to system Song/Ming fonts.
 - Native Abstract and BibTeX disclosures work without JavaScript.
 - Only one disclosure per paper opens at a time; content fades in for 160 ms.
 - Link color changes take 120 ms. Reduced-motion preferences disable both effects.
+- Beyond Research frames crossfade every 3.5 s while on screen and pause under the
+  pointer; the two rows are offset. With reduced motion they stay on the first
+  photo. The dots jump to a photo, and a frame opens a viewer with arrow-key
+  navigation. Without JavaScript a frame links to its first full-size photo.
 - Clipboard controls announce success or select the citation if access is denied.
 - Keyboard focus, a skip link, mobile layout, and print styles are included.
 
@@ -146,11 +151,11 @@ src/components/Profile.astro       Portrait, English and Chinese name, contact l
 src/components/About.astro         Short bio and application status
 src/components/Publications.astro  Research heading and ordered list
 src/components/Publication.astro   Figure, paper metadata, native disclosures
-src/components/Beyond.astro        Photo cards for life outside research
+src/components/Beyond.astro        Photo slideshows and viewer for life outside research
 src/components/Footer.astro        Last-updated date (build date)
 src/layouts/Base.astro             Document metadata and skip link
 src/pages/index.astro              Two-column layout
-src/scripts/ui.ts                  Clipboard feedback, figure video playback
+src/scripts/ui.ts                  Clipboard, figure videos, slideshows, photo viewer
 src/styles/global.css             Typography, colors, responsive layout
 src/assets/fonts/                  Chinese name font subset
 ```
