@@ -20,13 +20,14 @@ const links = profile.links.filter((link) => link.url);
       {profile.nameZh && <span class="profile__name-zh" lang="zh-CN">{profile.nameZh}</span>}
     </h1>
     <p class="profile__role">{profile.role}</p>
-    <p class="profile__affiliation">
-      {profile.affiliationLogo && (
-        <img class="profile__crest" src={profile.affiliationLogo.src} alt="" aria-hidden="true"
+    {profile.affiliationLogo ? (
+      <p class="profile__affiliation profile__affiliation--logo">
+        <img class="profile__logo" src={profile.affiliationLogo.src} alt={profile.affiliation}
           width={profile.affiliationLogo.width} height={profile.affiliationLogo.height} />
-      )}
-      <span>{profile.affiliationShort ?? profile.affiliation}</span>
-    </p>
+      </p>
+    ) : (
+      <p class="profile__affiliation">{profile.affiliationShort ?? profile.affiliation}</p>
+    )}
   </div>
   <nav class="profile__links" aria-label="Contact and profiles">
     {profile.location && (
@@ -47,8 +48,8 @@ const links = profile.links.filter((link) => link.url);
   .profile__name { display: block; font-family: var(--serif); font-size: 29px; font-weight: 600; line-height: 1.2; }
   .profile__name-zh { display: block; margin-top: 5px; font-family: var(--serif-zh); font-size: 16px; font-weight: 500; line-height: 1.4; letter-spacing: 0.14em; color: var(--muted); }
   .profile__role, .profile__affiliation { font-size: 14px; color: var(--muted); line-height: 1.6; }
-  .profile__affiliation { display: flex; align-items: center; gap: 7px; margin-top: 3px; }
-  .profile__crest { width: auto; height: 20px; flex: 0 0 auto; }
+  .profile__affiliation--logo { margin-top: 10px; }
+  .profile__logo { width: 168px; height: auto; }
   .profile__links { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 19px; }
   .profile__links a, .profile__location { display: inline-flex; align-items: center; gap: 9px; min-height: 28px; font-size: 14px; color: var(--muted); text-decoration: none; }
   .profile__links a:hover { color: var(--accent); text-decoration: underline; }
