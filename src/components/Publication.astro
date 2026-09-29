@@ -2,7 +2,7 @@
 import { render } from 'astro:content';
 import { Image, getImage } from 'astro:assets';
 import Icon from './Icon.astro';
-import { arxivUrl, bibtex, doiUrl, isSameAuthor, primaryUrl, type Publication } from '../lib/publications';
+import { bibtex, isSameAuthor, paperUrl as findPaperUrl, primaryUrl, type Publication } from '../lib/publications';
 import { withBase } from '../lib/url';
 
 interface Props { pub: Publication; me: string }
@@ -13,7 +13,7 @@ const hasAbstract = (pub.body ?? '').trim().length > 0;
 const resolveUrl = (url: string) => url.startsWith('/') ? withBase(url) : url;
 const titleUrl = primaryUrl(pub);
 const citation = bibtex(pub);
-const paperUrl = d.pdf || (d.arxiv ? arxivUrl(d.arxiv) : null) || (d.doi ? doiUrl(d.doi) : null);
+const paperUrl = findPaperUrl(pub);
 const links = [
   paperUrl ? { label: 'Paper', url: paperUrl } : null,
   d.code ? { label: 'Code', url: d.code } : null,

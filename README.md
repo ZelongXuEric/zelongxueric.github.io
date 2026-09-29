@@ -46,8 +46,8 @@ summary: "One sentence explaining what the title does not."
 image: ./figures/paper.png         # optional; shown beside the entry
 imageAlt: "What the figure shows" # required whenever image is set
 video: /media/paper.mp4           # optional; plays in place of the figure, image is its poster
-arxiv: "2606.07678"                # optional; derives a public paper link
-pdf: /files/paper.pdf             # optional; URLs or site-relative paths
+arxiv: "2606.07678"                # optional; title and [Paper] open arxiv.org/pdf/<id>
+pdf: /files/paper.pdf             # optional; overrides the arXiv PDF link
 code: https://github.com/example  # optional
 project: https://example.com      # optional
 doi: 10.1234/example              # optional

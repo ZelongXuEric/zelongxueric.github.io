@@ -3,6 +3,7 @@ import type { CollectionEntry } from 'astro:content';
 export type Publication = CollectionEntry<'publications'>;
 
 export const arxivUrl = (id: string) => `https://arxiv.org/abs/${id}`;
+export const arxivPdfUrl = (id: string) => `https://arxiv.org/pdf/${id}`;
 export const doiUrl = (doi: string) => `https://doi.org/${doi}`;
 
 /** Newest first; papers without a `date` sort as 1 January of their year. */
@@ -16,11 +17,15 @@ export function sortForDisplay(pubs: Publication[]): Publication[] {
   return sortNewestFirst(pubs).sort((a, b) => a.data.order - b.data.order);
 }
 
-/** Where the title links to: arXiv, then PDF, then DOI, then project page. */
-export function primaryUrl(p: Publication): string | undefined {
+/** The paper itself: an explicit PDF, then the arXiv PDF, then the DOI. */
+export function paperUrl(p: Publication): string | undefined {
   const d = p.data;
-  if (d.arxiv) return arxivUrl(d.arxiv);
-  return d.pdf || (d.doi ? doiUrl(d.doi) : undefined) || d.project || undefined;
+  return d.pdf || (d.arxiv ? arxivPdfUrl(d.arxiv) : undefined) || (d.doi ? doiUrl(d.doi) : undefined);
+}
+
+/** Where the title links to: the paper, otherwise the project page. */
+export function primaryUrl(p: Publication): string | undefined {
+  return paperUrl(p) || p.data.project || undefined;
 }
 
 /** Strips equal-contribution style markers ("Name*", "Name†") for matching. */

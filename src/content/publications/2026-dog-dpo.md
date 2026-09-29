@@ -12,7 +12,7 @@ authors:
   - Yue Huang
   - Xiangliang Zhang
   - Yue Zhao
-venue: Findings of EMNLP 2026
+venue: EMNLP 2026
 status: published
 year: 2026
 order: 4

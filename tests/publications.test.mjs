@@ -41,7 +41,8 @@ test('title URL uses the best available public resource, or stays unlinked', () 
   assert.equal(primaryUrl(paper({ project: '/projects/example' })), '/projects/example');
   assert.equal(primaryUrl(paper({ doi: '10.1234/example', project: '/projects/example' })), 'https://doi.org/10.1234/example');
   assert.equal(primaryUrl(paper({ pdf: '/files/paper.pdf', doi: '10.1234/example' })), '/files/paper.pdf');
-  assert.equal(primaryUrl(paper({ arxiv: '2606.07678', pdf: '/files/paper.pdf' })), 'https://arxiv.org/abs/2606.07678');
+  assert.equal(primaryUrl(paper({ arxiv: '2606.07678', pdf: '/files/paper.pdf' })), '/files/paper.pdf');
+  assert.equal(primaryUrl(paper({ arxiv: '2606.07678', doi: '10.1234/example' })), 'https://arxiv.org/pdf/2606.07678');
 });
 
 test('no incomplete generated citation when the author list is unknown', () => {
