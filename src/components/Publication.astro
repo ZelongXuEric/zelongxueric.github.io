@@ -17,7 +17,7 @@ const paperUrl = findPaperUrl(pub);
 const links = [
   paperUrl ? { label: 'Paper', url: paperUrl } : null,
   d.code ? { label: 'Code', url: d.code } : null,
-  d.project ? { label: 'Project', url: d.project } : null,
+  d.project ? { label: 'Website', url: d.project } : null,
 ].filter((link): link is { label: string; url: string } => link !== null);
 const bibId = `bibtex-${pub.id}`;
 const titleId = `title-${pub.id}`;

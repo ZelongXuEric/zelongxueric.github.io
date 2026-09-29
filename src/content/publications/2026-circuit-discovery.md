@@ -7,6 +7,7 @@ status: under-review
 year: 2026
 order: 1
 summary: "Estimating the causal contributions of circuit edges with calibrated statistical tests that reuse model evaluations."
+pdf: https://drive.google.com/file/d/1X8oGWCiXoo2uhfgDhot3JOm2OSLQY58h/view
 image: ./figures/2026-circuit-discovery.png
 imageAlt: "Recovery of shared (C), variable (V), and combined (U) components in three model-task settings: V recovers almost nothing alone, yet adding it to C more than doubles recovery, far beyond size-matched random additions."
 ---
