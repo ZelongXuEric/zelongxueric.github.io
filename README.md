@@ -20,7 +20,7 @@ npm run preview
 | --- | --- |
 | `src/content/profile.yaml` | Identity, city, affiliation, application status, profile links |
 | `src/content/about.md` | Two short introductory paragraphs |
-| `src/content/portrait.jpg` | Square portrait crop (face centered), optimized at build time and shown as a circle |
+| `src/content/portrait.jpg` | Square portrait crop, optimized at build time and shown as a circle |
 | `src/content/publications/*.md` | One research item per file |
 | `src/content/publications/figures/` | One figure per paper, optimized at build time |
 | `public/files/` | Publicly downloadable CV and other files |
