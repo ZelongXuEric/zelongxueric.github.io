@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import { Image, getImage } from 'astro:assets';
 import Icon from './Icon.astro';
+import HuggingFaceIcon from './HuggingFaceIcon.astro';
 import { bibtex, isSameAuthor, paperUrl as findPaperUrl, primaryUrl, type Publication } from '../lib/publications';
 import { withBase } from '../lib/url';
 
@@ -17,8 +18,9 @@ const paperUrl = findPaperUrl(pub);
 const links = [
   paperUrl ? { label: 'Paper', url: paperUrl } : null,
   d.code ? { label: 'Code', url: d.code } : null,
+  d.huggingface ? { label: 'Dataset', url: d.huggingface, huggingface: true } : null,
   d.project ? { label: 'Website', url: d.project } : null,
-].filter((link): link is { label: string; url: string } => link !== null);
+].filter((link): link is { label: string; url: string; huggingface?: boolean } => link !== null);
 const bibId = `bibtex-${pub.id}`;
 const titleId = `title-${pub.id}`;
 const contributionNoteId = `contribution-${pub.id}`;
@@ -61,7 +63,7 @@ const poster = d.video && d.image ? await getImage({ src: d.image, width: 854, f
     {d.summary && <p class="pub__summary">{d.summary}</p>}
     {(links.length > 0 || hasAbstract || citation) && (
       <div class="pub__resources">
-        {links.map((link) => <a href={resolveUrl(link.url)}>[{link.label}]</a>)}
+        {links.map((link) => <a href={resolveUrl(link.url)}>[{link.huggingface && <HuggingFaceIcon />}{link.label}]</a>)}
         {hasAbstract && (
           <details class="pub__details" name={`details-${pub.id}`}>
             <summary>[Abstract]</summary>
@@ -124,6 +126,7 @@ const poster = d.video && d.image ? await getImage({ src: d.image, width: 854, f
   .pub__resources > a, summary { min-height: 28px; display: inline-flex; align-items: center; }
   .pub__resources > a { text-decoration: none; }
   .pub__resources > a:hover { text-decoration: underline; }
+  .pub__resources > a :global(svg) { flex: none; margin: 0 4px 0 1px; }
   .pub__details, .pub__details::details-content { display: contents; }
   .pub__details:not([open]) > .pub__panel { display: none; }
   summary {

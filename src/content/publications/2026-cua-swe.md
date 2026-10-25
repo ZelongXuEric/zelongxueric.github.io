@@ -21,6 +21,7 @@ year: 2026
 order: 2
 summary: "A benchmark for agents that edit code and interact with running software, with deterministic tests across web, game, mobile, and DevOps tasks."
 arxiv: "2609.32600"
+huggingface: https://huggingface.co/datasets/kingofspace0wzz/CUA-SWE
 project: https://zelongxueric.github.io/cua-swe-website/
 image: ./figures/2026-cua-swe-poster.png
 video: /media/cua-swe-demo.mp4

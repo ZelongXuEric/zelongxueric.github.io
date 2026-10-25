@@ -49,6 +49,7 @@ video: /media/paper.mp4           # optional; plays in place of the figure, imag
 arxiv: "2606.07678"                # optional; title and [Paper] open arxiv.org/pdf/<id>
 pdf: /files/paper.pdf             # optional; overrides the arXiv PDF link
 code: https://github.com/example  # optional
+huggingface: https://huggingface.co/datasets/example  # optional; shown as [Dataset] with the Hugging Face logo
 project: https://example.com      # optional; shown as [Website]
 doi: 10.1234/example              # optional
 ---

@@ -51,6 +51,7 @@ const publications = defineCollection({
     arxiv: z.string().nullish(),
     pdf: z.string().nullish(),
     code: z.string().nullish(),
+    huggingface: z.string().nullish(),
     project: z.string().nullish(),
     doi: z.string().nullish(),
     note: z.string().nullish(),
