@@ -18,7 +18,7 @@ equalContribution:
   - Xiaolin Zhou
 status: under-review
 year: 2026
-order: 2
+order: 3
 summary: "A benchmark for agents that edit code and interact with running software, with deterministic tests across web, game, mobile, and DevOps tasks."
 arxiv: "2609.32600"
 huggingface: https://huggingface.co/datasets/kingofspace0wzz/CUA-SWE

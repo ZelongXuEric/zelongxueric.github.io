@@ -14,9 +14,10 @@ photo: ./portrait.jpg
 
 description: >-
   Zelong Xu is an undergraduate researcher at the University of Wisconsin-Madison
-  working on language model evaluation, interpretability, and multimodal learning.
+  who builds statistical tests of what foundation models have learned, from
+  language and multimodal models to protein language models.
 
-status: I am applying to CS PhD programs for Fall 2027.
+status: I am applying to PhD programs in Computer Science and Computational Biology for Fall 2027.
 
 # Empty links are omitted from the page.
 links:
