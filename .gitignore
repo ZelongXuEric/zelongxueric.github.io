@@ -5,3 +5,6 @@ dist/
 *.log
 .env
 .env.*
+
+# Private source material (CV drafts, SoP, manuscripts) for local reference only; never deployed.
+/_materials/
