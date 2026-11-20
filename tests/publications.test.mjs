@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { bibtex, isSameAuthor, primaryUrl, sortForDisplay, sortNewestFirst } from '../src/lib/publications.ts';
+import { bibtex, isElision, isSameAuthor, primaryUrl, sortForDisplay, sortNewestFirst, venueLine } from '../src/lib/publications.ts';
 
 const paper = (overrides = {}) => ({
   id: 'example',
@@ -47,6 +47,28 @@ test('title URL uses the best available public resource, or stays unlinked', () 
 
 test('no incomplete generated citation when the author list is unknown', () => {
   assert.equal(bibtex(paper({ authors: [], status: 'under-review' })), '');
+});
+
+test('an abbreviated author list is recognized and never cited', () => {
+  assert.equal(isElision('…'), true);
+  assert.equal(isElision(' ... '), true);
+  assert.equal(isElision('Zelong Xu'), false);
+  const authors = ['First Author', 'Zelong Xu', '…', 'Last Author'];
+  assert.equal(bibtex(paper({ authors, authorCount: 17, status: 'under-review' })), '');
+});
+
+test('the venue line names the venue only for published work', () => {
+  assert.equal(venueLine({ status: 'published', venue: 'Findings of EMNLP 2026', year: 2026 }), 'Findings of EMNLP 2026');
+  assert.equal(venueLine({ status: 'published', venue: 'Some Journal', year: 2026 }), 'Some Journal · 2026');
+  assert.equal(venueLine({ status: 'under-review', venue: 'Submission venue', year: 2026 }), 'Under review · 2026');
+  assert.equal(venueLine({ status: 'preprint', year: 2026 }), 'Preprint · 2026');
+  assert.equal(venueLine({ status: 'manuscript', year: 2026 }), 'Manuscript · 2026');
+});
+
+test('an unpublished manuscript has no link and no generated citation', () => {
+  const manuscript = paper({ status: 'manuscript' });
+  assert.equal(primaryUrl(manuscript), undefined);
+  assert.equal(bibtex(manuscript), '');
 });
 
 test('under-review work never acquires a conference publication citation', () => {

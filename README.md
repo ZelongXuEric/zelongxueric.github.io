@@ -38,7 +38,8 @@ title: "Paper title"
 authors:
   - First Author
   - Zelong Xu
-status: published                 # published | preprint | under-review
+authorCount: 17                   # only with an abbreviated author list, see below
+status: published                 # published | preprint | under-review | manuscript
 venue: Findings of EMNLP 2026     # actual publication venue, not submission venue
 year: 2026
 order: 1                          # lower values appear first; defaults to 100
@@ -57,20 +58,34 @@ doi: 10.1234/example              # optional
 Optional abstract in Markdown.
 ```
 
-The author list must be complete and confirmed, in the paper's original order.
-The profile owner's name is bold. For confirmed co-first authors, add an
-`equalContribution` list containing their exact names from `authors`. These names
-receive superscript asterisks and a small explanation below that paper's author
-list. Author order is unchanged, and citation names never include these markers.
-No separate first-author badges are shown. When the list is not available, omit `authors`;
-no BibTeX is generated from an unknown author list. A hand-written `bibtex`
-field can override the generated citation.
+The author list must be confirmed, in the paper's original order. The profile
+owner's name is bold. For confirmed co-first authors, add an `equalContribution`
+list containing their exact names from `authors`. These names receive superscript
+asterisks and a small explanation below that paper's author list. Author order is
+unchanged, and citation names never include these markers. No separate
+first-author badges are shown. A hand-written `bibtex` field can override the
+generated citation.
 
-Author lists for the three September 2026 works have been checked against the
-uploaded manuscripts. Their public resource links can be added when available.
-Only include work that is cleared for public display. Under-review work is
-explicitly labeled, never presented as accepted at its submission venue.
-Published venues use the darker text color; other statuses stay gray.
+A long list may leave names out: put a single `"…"` entry where they are omitted
+and give the full count in `authorCount`, shown as "(17 authors)". When no names
+are available, omit `authors`. No BibTeX is generated from an abbreviated or
+unknown author list.
+
+Only include work that is cleared for public display, and only the links that
+are. The status decides the line under the authors:
+
+| `status` | Shown as | Use for |
+| --- | --- | --- |
+| `published` | the `venue`, in the darker text color | accepted or published work |
+| `preprint` | Preprint | a public preprint that is not under review |
+| `under-review` | Under review | submitted work; the submission venue is never named |
+| `manuscript` | Manuscript | unpublished work that is neither public nor submitted |
+
+A manuscript has no paper link and no BibTeX. The circuit discovery paper is one:
+it must not link to a copy or be described as under review.
+
+The FrontierPro and LiveWorldBench author lists are abbreviated as in the CV.
+Replace them with the full lists, and add links, once the papers are public.
 
 Entries sort by `order`, then newest first using optional `date` or `year`.
 There are no year groups, badges, filters, or duplicated news announcements.
@@ -125,8 +140,12 @@ Icons, CC0-1.0).
 
 The CV link is configured in `profile.yaml`; keep it in sync with the filename
 in `public/files/`. **Everything in `public/` is copied into the deployed site,
-including files that are not linked.** Remove private addresses, phone numbers,
-and unpublished material from any version intended for deployment.
+including files that are not linked.** Remove private addresses and unpublished
+material from any version intended for deployment. The CV header shows a phone
+number by choice.
+
+Source material that must stay private (statements, manuscripts, drafts) goes in
+`_materials/`, which is ignored by git and never deployed.
 
 The GitHub repository is
 [ZelongXuEric/zelongxueric.github.io](https://github.com/ZelongXuEric/zelongxueric.github.io).

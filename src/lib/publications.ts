@@ -33,11 +33,28 @@ const plain = (name: string) => name.replace(/[*†‡]+$/, '').trim();
 
 export const isSameAuthor = (a: string, b: string) => plain(a) === plain(b);
 
+/** An `authors` entry of "…" (or "...") stands for names left out of a long list. */
+export const isElision = (name: string) => /^(…|\.\.\.)$/.test(name.trim());
+
+const STATUS_LABELS = {
+  preprint: 'Preprint',
+  'under-review': 'Under review',
+  manuscript: 'Manuscript',
+} as const;
+
+/** The venue line: the publication venue, or the status of unpublished work, with the year. */
+export function venueLine(d: Pick<Publication['data'], 'status' | 'venue' | 'year'>): string {
+  const label = d.status === 'published' ? d.venue || 'Published' : STATUS_LABELS[d.status];
+  return label.includes(String(d.year)) ? label : `${label} · ${d.year}`;
+}
+
 export function bibtex(p: Publication): string {
   const d = p.data;
   if (d.bibtex) return d.bibtex.trim();
 
-  if (!d.authors.length) return '';
+  // No generated citation without a complete author list, or for a manuscript
+  // that has no public copy to cite.
+  if (!d.authors.length || d.authors.some(isElision) || d.status === 'manuscript') return '';
   const published = d.status === 'published' && !!d.venue;
   const lastName = plain(d.authors[0]).split(/\s+/).pop() ?? 'anon';
   const firstWord = d.title.toLowerCase().match(/[a-z0-9]+/)?.[0] ?? 'paper';
