@@ -9,7 +9,7 @@ client-side framework. The portrait, paper figures, and fonts are served locally
 ```bash
 npm install
 npm run dev       # http://localhost:4321
-npm test          # Node 22.6+; publication ordering, author matching, venue line
+npm test          # Node 22.6+; publication ordering, author matching, venue line, sidebar figure
 npm run build     # static output in dist/
 npm run preview
 ```
@@ -23,6 +23,7 @@ npm run preview
 | `src/content/portrait.jpg` | Square portrait crop, optimized at build time and shown as a circle |
 | `src/content/publications/*.md` | One research item per file |
 | `src/content/publications/figures/` | One figure per paper, optimized at build time |
+| `src/data/contact-figure.json` | Data for the sidebar figure, written by `scripts/contact-figure.py` |
 | `public/files/` | Publicly downloadable CV and other files |
 | `public/media/` | Figure videos (MP4) |
 
@@ -107,6 +108,36 @@ controls are shown). Keep them small: an H.264 MP4 at 854x480 is plenty at this
 size, e.g. `ffmpeg -i in.mp4 -vf scale=854:-2 -c:v libx264 -preset slow -crf 27
 -pix_fmt yuv420p -movflags +faststart -an public/media/out.mp4`.
 
+## Sidebar figure
+
+Below the profile links is a small ink drawing that animates once, with no text.
+It shows the idea the biography ends on: what a model proposes, tested against
+an experiment. The 28 residue contacts that the protein language model ESM-2
+ranks highest for protein GB1 appear as dashed lines. Then the backbone is
+traced through them (PDB 1PGA), and each contact is tested as the chain reaches
+it: a confirmed contact closes into a solid stitch and stays, a refuted one
+parts in the middle and draws back.
+
+Nothing in it is invented. `scripts/contact-figure.py` runs ESM-2 (150M) on the
+sequence, keeps the top L/2 pairs at least six residues apart, and marks a pair
+confirmed when its C-beta atoms are within 8 angstroms in the structure. To
+rebuild the data:
+
+```bash
+pip install torch transformers numpy
+curl -O https://files.rcsb.org/download/1PGA.pdb
+python scripts/contact-figure.py 1PGA.pdb > src/data/contact-figure.json
+```
+
+The drawing uses one ink and no accent color, by choice. Its only words are the
+tooltip and the label for screen readers; their counts come from the data, but
+they name the model and the protein by hand, so update `ContactFigure.astro` if
+either changes. The sequence plays once when the figure comes into view and then
+rests. Clicking it replays it, and moving the pointer over it turns the molecule
+slightly. With reduced motion the finished drawing appears at once. It is not
+shown at phone width or without JavaScript. Ink, timing, and the resting view
+are constants at the top of `src/lib/contactFigure.ts`.
+
 ## Typography
 
 IBM Plex Sans is the text face. The English name uses Source Serif 4. The
@@ -132,6 +163,7 @@ Icons, CC0-1.0).
 
 - The native Abstract disclosure works without JavaScript; its content fades in for 160 ms.
 - Link color changes take 120 ms. Reduced-motion preferences disable both effects.
+- The sidebar figure animates once and then stays still; see above.
 - Keyboard focus, a skip link, mobile layout, and print styles are included.
 
 ## CV and deployment
@@ -164,6 +196,7 @@ change.
 
 ```text
 src/components/Profile.astro       Portrait, English and Chinese name, contact links
+src/components/ContactFigure.astro Sidebar figure: the canvas and its script
 src/components/About.astro         Short bio and application status
 src/components/Publications.astro  Research heading and ordered list
 src/components/Publication.astro   Figure, paper metadata, links, abstract disclosure
@@ -171,6 +204,8 @@ src/components/Footer.astro        Last-updated date (build date)
 src/layouts/Base.astro             Document metadata and skip link
 src/pages/index.astro              Two-column layout
 src/scripts/ui.ts                  Figure video playback
+src/lib/contactFigure.ts           Sidebar figure geometry and timing
+scripts/contact-figure.py          Builds the sidebar figure data
 src/styles/global.css             Typography, colors, responsive layout
 src/assets/fonts/                  Chinese name font subset
 ```

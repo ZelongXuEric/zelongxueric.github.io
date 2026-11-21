@@ -1,0 +1,150 @@
+---
+// Sidebar figure, without words: an ink drawing of one small protein and the residue contacts a
+// protein language model proposes for it, each tested against the crystal structure.
+// The data comes from scripts/contact-figure.py. The figure needs JavaScript to draw, so it
+// stays hidden without it.
+import data from '../data/contact-figure.json';
+
+const confirmed = data.contacts.filter(([, , ok]) => ok).length;
+const about = `Protein GB1 (PDB ${data.pdb}) with the residue contacts predicted by the protein language model ESM-2: the crystal structure confirms ${confirmed} of ${data.contacts.length}.`;
+---
+<figure class="contacts" hidden>
+  <canvas role="img" aria-label={about} title={`${about} Click to replay.`}></canvas>
+</figure>
+
+<style>
+  .contacts { margin: 14px 0 0; }
+  .contacts[hidden] { display: none; }
+  canvas { display: block; width: 100%; height: 140px; cursor: pointer; }
+  @media (max-width: 760px) { .contacts { display: none; } }
+</style>
+
+<script>
+  import data from '../data/contact-figure.json';
+  import { backbone, DURATION, fit, progressAt, REACH, scene, smooth, viewAt, type Contact, type Frame, type Shape, type Vec3 } from '../lib/contactFigure';
+
+  /** Paints the shapes back to front. A halo is a white edge that lets a nearer line pass over a farther one. */
+  function paint(context: CanvasRenderingContext2D, shapes: Shape[], frame: Frame) {
+    context.clearRect(0, 0, frame.width, frame.height);
+    for (const shape of shapes) {
+      context.beginPath();
+      context.setLineDash([]);
+      if (shape.kind === 'dot') {
+        context.globalAlpha = shape.alpha;
+        context.fillStyle = shape.color;
+        context.arc(shape.x, shape.y, shape.r, 0, 2 * Math.PI);
+        context.fill();
+        continue;
+      }
+      context.moveTo(shape.x1, shape.y1);
+      context.lineTo(shape.x2, shape.y2);
+      if (shape.halo) {
+        context.globalAlpha = 1;
+        context.strokeStyle = '#fff';
+        context.lineWidth = shape.width + shape.halo;
+        context.lineCap = 'butt';
+        context.stroke();
+      }
+      context.globalAlpha = shape.alpha;
+      context.strokeStyle = shape.color;
+      context.lineWidth = shape.width;
+      context.lineCap = shape.dash ? 'butt' : 'round';
+      if (shape.dash) context.setLineDash([...shape.dash]);
+      context.stroke();
+    }
+    context.globalAlpha = 1;
+  }
+
+  function start(figure: HTMLElement, canvas: HTMLCanvasElement) {
+    const context = canvas.getContext('2d');
+    if (!context || !figure.hidden) return;
+    figure.hidden = false;
+
+    const guide = smooth(data.ca as unknown as Vec3[]);
+    const curve = backbone(guide);
+    const contacts = data.contacts as unknown as Contact[];
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let ms = still ? DURATION : 0; // position in the opening sequence
+    let playing = false;
+    const turn = { yaw: 0, pitch: 0 }; // what the pointer adds to the view
+    let aim = { yaw: 0, pitch: 0 };
+    let frame: Frame = { width: 0, height: 0, scale: 1 };
+    let pending = 0;
+    let last = 0;
+
+    function resize() {
+      const { width, height } = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+      context!.setTransform(ratio, 0, 0, ratio, 0, 0);
+      frame = { width, height, scale: fit(curve, width, height) };
+    }
+
+    function draw() {
+      const view = viewAt(ms);
+      paint(context!, scene(guide, curve, contacts, { yaw: view.yaw + turn.yaw, pitch: view.pitch + turn.pitch }, frame, progressAt(ms, contacts, guide.length)), frame);
+    }
+
+    function tick(now: number) {
+      pending = 0;
+      const elapsed = Math.min(50, now - last); // a hidden tab pauses the sequence instead of skipping it
+      last = now;
+      if (playing) {
+        ms = Math.min(DURATION, ms + elapsed);
+        playing = ms < DURATION;
+      }
+      const ease = 1 - Math.exp(-elapsed / 140);
+      turn.yaw += (aim.yaw - turn.yaw) * ease;
+      turn.pitch += (aim.pitch - turn.pitch) * ease;
+      draw();
+      if (playing || Math.abs(aim.yaw - turn.yaw) + Math.abs(aim.pitch - turn.pitch) > 0.002) request();
+    }
+
+    function request() {
+      pending ||= requestAnimationFrame(tick);
+    }
+
+    function play() {
+      ms = 0;
+      playing = true;
+      request();
+    }
+
+    resize();
+    draw();
+    window.addEventListener('resize', () => { resize(); draw(); });
+    if (still) return;
+
+    // The sequence plays once when the figure comes into view; a click replays it.
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      setTimeout(play, 300);
+    }, { threshold: 0.5 });
+    observer.observe(canvas);
+    canvas.addEventListener('click', play);
+
+    // The molecule turns a little toward the pointer and returns when it leaves.
+    canvas.addEventListener('pointermove', (event) => {
+      if (event.pointerType === 'touch') return;
+      const box = canvas.getBoundingClientRect();
+      aim = {
+        yaw: (((event.clientX - box.left) / box.width) * 2 - 1) * REACH.yaw,
+        pitch: (((event.clientY - box.top) / box.height) * 2 - 1) * REACH.pitch,
+      };
+      request();
+    });
+    canvas.addEventListener('pointerleave', () => { aim = { yaw: 0, pitch: 0 }; request(); });
+  }
+
+  const figure = document.querySelector<HTMLElement>('.contacts');
+  const canvas = figure?.querySelector('canvas');
+  if (figure && canvas) {
+    // The figure is not shown at phone width, so it starts only once there is room for it.
+    const wide = window.matchMedia('(min-width: 761px)');
+    if (wide.matches) start(figure, canvas);
+    else wide.addEventListener('change', () => start(figure, canvas), { once: true });
+  }
+</script>

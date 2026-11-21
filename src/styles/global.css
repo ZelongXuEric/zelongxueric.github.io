@@ -101,6 +101,10 @@ main { min-width: 0; }
     padding-top: 28px;
   }
 }
+/* The sidebar figure makes the profile taller, so it stays pinned only where all of it still fits. */
+@media (min-width: 761px) and (max-height: 689px) {
+  .profile:has(.contacts:not([hidden])) { position: static; }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
