@@ -12,6 +12,14 @@
   font-weight: 200 900;
   src: url('@fontsource-variable/source-serif-4/files/source-serif-4-latin-opsz-normal.woff2') format('woff2');
 }
+/* The italic is used only for the lead sentence of the introduction. */
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-italic.woff2') format('woff2');
+}
 /* Noto Serif SC (SIL OFL 1.1), subset to the three characters of the Chinese name. */
 @font-face {
   font-family: 'Noto Serif SC Name';
@@ -24,6 +32,7 @@
 :root {
   color-scheme: light;
   --ink: #333638;
+  --strong: #1c1d1e;
   --muted: #62686c;
   --accent: #286f80;
   --accent-hover: #174956;
@@ -44,6 +53,7 @@ body { margin: 0; color: var(--ink); background: #fff; }
 h1, h2, h3, p, figure { margin: 0; }
 h1, h2, h3 { line-height: 1.4; font-weight: 600; }
 strong { font-weight: 600; }
+.prose strong { color: var(--strong); }
 img, svg { display: block; max-width: 100%; }
 a {
   color: var(--accent);
@@ -100,10 +110,6 @@ main { min-width: 0; }
     gap: 32px;
     padding-top: 28px;
   }
-}
-/* The sidebar figure makes the profile taller, so it stays pinned only where all of it still fits. */
-@media (min-width: 761px) and (max-height: 689px) {
-  .profile:has(.contacts:not([hidden])) { position: static; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

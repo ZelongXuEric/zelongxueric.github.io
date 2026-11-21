@@ -1,185 +1,262 @@
 /**
- * The sidebar figure, drawn in ink: the residue contacts a language model proposes for a protein
- * appear first, then the backbone is traced through them and each contact is tested against the
- * crystal structure as the chain reaches it. A confirmed contact closes into a stitch; a refuted
- * one breaks and draws back. This file is the geometry and the timing; the component paints the
- * shapes it returns.
+ * The intro figure: a ribbon diagram of one small protein in ink with a wash of color. The ribbon
+ * is drawn along the chain; then the residue contacts a language model proposes are tested against
+ * the structure one by one, and fade. This file is the geometry, the color, and the timing; the
+ * component paints the shapes it returns.
  */
 
 export type Vec3 = readonly [number, number, number];
 /** Two residue indices, the earlier first, and whether the structure confirms the contact (1) or not (0). */
 export type Contact = readonly [i: number, j: number, confirmed: number];
+/** What scripts/contact-figure.py writes. `structure` has E for a strand, H for a helix, - for a loop. */
+export interface FigureData { ca: readonly Vec3[]; o: readonly Vec3[]; structure: string; contacts: readonly Contact[] }
 
 /** Viewing angles in radians: a turn about the vertical axis, then a tilt toward the viewer. */
 export interface View { yaw: number; pitch: number }
 /** The drawing area in CSS pixels, and pixels per angstrom. */
 export interface Frame { width: number; height: number; scale: number }
-/** How much of the chain is drawn, and how far each contact has been proposed, tested, and settled (all 0 to 1). */
-export interface Progress { chain: number; proposed: readonly number[]; tested: readonly number[]; settled: readonly number[] }
 
-interface Stroke { kind: 'line'; z: number; x1: number; y1: number; x2: number; y2: number; width: number; color: string; alpha: number; dash?: readonly [number, number]; halo?: number }
-interface Dot { kind: 'dot'; z: number; x: number; y: number; r: number; color: string; alpha: number }
-export type Shape = Stroke | Dot;
+interface Point { x: number; y: number }
+export type Shape =
+  /** A piece of ribbon: a filled quadrilateral with its two long edges inked. */
+  | { kind: 'band'; z: number; corners: readonly [Point, Point, Point, Point]; fill: string; edge: string; width: number }
+  /** A piece of loop, with a white halo so it passes cleanly over what lies behind. */
+  | { kind: 'loop'; z: number; from: Point; to: Point; color: string; width: number }
+  /** A contact between two residues. */
+  | { kind: 'stitch'; z: number; from: Point; to: Point; color: string; width: number; alpha: number; dash?: readonly [number, number] }
+  | { kind: 'dot'; z: number; x: number; y: number; r: number; color: string; alpha: number };
 
-// One ink, no hue: the near side of the molecule is dark and heavy, the far side light and thin.
+/** One point along the ribbon: its center, the unit vector across it, and its half-width in angstroms. */
+export interface Sample { p: Vec3; side: Vec3; width: number; u: number; kind: string }
+export interface Model { samples: Sample[]; anchors: Vec3[]; contacts: readonly Contact[]; length: number }
+
+// The wash of color: slate blue on the helix and wheat on the strands, the pairing most
+// structure figures use. Loops stay ink.
 type Rgb = readonly [number, number, number];
-const INK: Rgb = [24, 25, 26];
-const FAR: Rgb = [178, 180, 181];
-const PENCIL: Rgb = [132, 134, 135]; // a contact that has been proposed but not yet tested
+const HELIX_HUE: Rgb = [88, 122, 172];
+const STRAND_HUE: Rgb = [214, 176, 104];
+const hueOf = (kind: string) => (kind === 'H' ? HELIX_HUE : kind === 'E' ? STRAND_HUE : null);
+const WHITE: Rgb = [255, 255, 255];
+const PENCIL = 132; // grey of a contact that has been proposed but not yet tested
+const INK = 24;
+const FAR = 178;
 
 const CAMERA = 110; // angstroms from the center; far enough for only a mild perspective
-const SAMPLES_PER_RESIDUE = 6;
-const SMOOTHING = 0.4;
+const SAMPLES = 8; // per residue
+const STRAND = 1.8; // half-widths in angstroms
+const HELIX = 1.5;
+const ARROW = 1.3; // residues an arrowhead takes up
+const ARROW_WIDTH = 3;
 
-export const REST: View = { yaw: -0.25, pitch: 0.15 };
-/** How far the pointer can turn the molecule from its resting view, in radians. */
+/** The resting view: the helix in front, lying across the sheet. */
+export const REST: View = { yaw: 2.7, pitch: -0.18 };
+/** How far the pointer can turn the molecule from where it is, in radians. */
 export const REACH: View = { yaw: 0.45, pitch: 0.22 };
+/** After the sequence the molecule sways this far to either side, slowly. */
+const SWAY: View = { yaw: 0.2, pitch: 0.05 };
+const SWAY_MS: View = { yaw: 16000, pitch: 21000 };
 const OPENING_TURN = 0.9; // radians the molecule turns through while the sequence plays
 
-const PROPOSE_MS = 700; // one contact appearing
-const PROPOSE_STAGGER_MS = 30; // between contacts, in the model's order of confidence
-const CHAIN_START_MS = 800;
-const CHAIN_MS = 3600;
+const DRAW_MS = 3200; // the ribbon being drawn
+const PROPOSE_AT = 2300; // contacts appear, a little apart, in the model's order of confidence
+const PROPOSE_GAP = 40;
+const PROPOSE_MS = 500;
+const TEST_AT = 3500; // then each is tested in turn
+const TEST_GAP = 60;
 const TEST_MS = 420;
 const LINGER_MS = 220;
-const SETTLE_MS = 700;
+const FADE_MS = 700;
 
 const clamp = (v: number) => Math.min(1, Math.max(0, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const mix = (a: Rgb, b: Rgb, t: number) => `rgb(${a.map((v, k) => Math.round(lerp(v, b[k], t))).join(' ')})`;
-const rgb = (c: Rgb) => mix(c, c, 0);
-const easeInOut = (t: number) => (1 - Math.cos(Math.PI * t)) / 2;
-const easeOut = (t: number) => 1 - (1 - t) ** 3;
-/** When an eased motion of length 1 has covered the fraction `f`. */
-const easedAt = (f: number) => Math.acos(1 - 2 * clamp(f)) / Math.PI;
+const add = (a: Vec3, b: Vec3): Vec3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const mul = (a: Vec3, s: number): Vec3 => [a[0] * s, a[1] * s, a[2] * s];
+const mix = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+const dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const unit = (a: Vec3): Vec3 => mul(a, 1 / (Math.hypot(a[0], a[1], a[2]) || 1));
+const easeInOut = (t: number) => (1 - Math.cos(Math.PI * clamp(t))) / 2;
+const easeOut = (t: number) => 1 - (1 - clamp(t)) ** 3;
+const smoothstep = (t: number) => clamp(t) ** 2 * (3 - 2 * clamp(t));
+const rgb = (c: Vec3) => `rgb(${Math.round(c[0])} ${Math.round(c[1])} ${Math.round(c[2])})`;
+const grey = (v: number) => rgb([v, v + 1, v + 2]);
+/** Ink for a line at depth `t`: light at the back of the molecule, dark at the front. */
+const ink = (t: number) => grey(lerp(FAR, INK, clamp(t)));
 
-/**
- * Softens the zigzag of the alpha carbons so strands read as ribbons while the helix keeps its coil.
- * Each point moves toward the midpoint of its neighbors; the two ends stay in place.
- */
-export function smooth(ca: readonly Vec3[], amount = SMOOTHING): Vec3[] {
-  return ca.map((p, i) => (i === 0 || i === ca.length - 1
-    ? p
-    : [0, 1, 2].map((k) => lerp(p[k], (ca[i - 1][k] + ca[i + 1][k]) / 2, amount)) as unknown as Vec3));
-}
-
-/** A smooth curve through the given points (Catmull-Rom), sampled evenly between them. */
-export function backbone(ca: readonly Vec3[], samples = SAMPLES_PER_RESIDUE): Vec3[] {
-  const at = (i: number) => ca[Math.min(ca.length - 1, Math.max(0, i))];
-  const points: Vec3[] = [];
-  for (let i = 0; i < ca.length - 1; i++) {
+/** Catmull-Rom through the points, `pieces` between neighbors, ending on the last point. */
+function spline(points: readonly Vec3[], pieces: number): Vec3[] {
+  const at = (i: number) => points[Math.min(points.length - 1, Math.max(0, i))];
+  const out: Vec3[] = [];
+  for (let i = 0; i < points.length - 1; i++) {
     const [a, b, c, d] = [at(i - 1), at(i), at(i + 1), at(i + 2)];
-    for (let s = 0; s < samples; s++) {
-      const t = s / samples;
-      points.push([0, 1, 2].map((k) => 0.5 * (
-        2 * b[k] + (c[k] - a[k]) * t + (2 * a[k] - 5 * b[k] + 4 * c[k] - d[k]) * t * t + (3 * b[k] - a[k] - 3 * c[k] + d[k]) * t * t * t
-      )) as unknown as Vec3);
+    for (let s = 0; s < pieces; s++) {
+      const t = s / pieces;
+      const along = (k: 0 | 1 | 2) => 0.5 * (2 * b[k] + (c[k] - a[k]) * t + (2 * a[k] - 5 * b[k] + 4 * c[k] - d[k]) * t * t + (3 * b[k] - a[k] - 3 * c[k] + d[k]) * t * t * t);
+      out.push([along(0), along(1), along(2)]);
     }
   }
-  points.push(ca[ca.length - 1]);
-  return points;
+  out.push(points[points.length - 1]);
+  return out;
 }
 
-function projector(view: View, frame: Frame) {
+/** Moves each point toward the midpoint of its neighbors by `amount(i)`; the two ends stay in place. */
+const soften = (points: readonly Vec3[], amount: (i: number) => number): Vec3[] =>
+  points.map((p, i) => (i === 0 || i === points.length - 1 ? p : mix(p, mul(add(points[i - 1], points[i + 1]), 0.5), amount(i))));
+
+/** The ribbon for a chain: flat arrows for strands, a coiled band for a helix, a thin line for loops. */
+export function model(data: FigureData): Model {
+  const { ca, o, structure } = data;
+  const n = ca.length;
+  // Each residue's peptide plane gives the direction across the ribbon (Carson and Bugg, 1986).
+  // Neighbors are kept on the same side, so a strand lies flat instead of twisting at every residue.
+  let sides = ca.map((p, i) => {
+    const along = i < n - 1 ? sub(ca[i + 1], p) : sub(p, ca[i - 1]);
+    return unit(cross(cross(along, sub(o[i], p)), along));
+  });
+  for (let i = 1; i < n; i++) if (dot(sides[i], sides[i - 1]) < 0) sides[i] = mul(sides[i], -1);
+  for (let pass = 0; pass < 2; pass++) sides = sides.map((d, i) => (i === 0 || i === n - 1 ? d : unit(add(add(sides[i - 1], mul(d, 2)), sides[i + 1]))));
+  // Strands lose the zigzag of their alpha carbons; the helix keeps its coil.
+  const eased = soften(ca, (i) => (structure[i] === 'E' ? 0.8 : structure[i] === 'H' ? 0 : 0.5));
+  const line = spline(soften(eased, (i) => (structure[i] === 'E' ? 0.5 : 0)), SAMPLES);
+  const half = (i: number) => (structure[i] === 'E' ? STRAND : structure[i] === 'H' ? HELIX : 0);
+  const strandEnd = (i: number) => structure[i] === 'E' && structure[i + 1] !== 'E';
+
+  const samples: Sample[] = [];
+  line.forEach((p, k) => {
+    const u = k / SAMPLES;
+    const i = Math.min(n - 2, Math.floor(u));
+    const t = u - i;
+    const tangent = unit(sub(line[Math.min(line.length - 1, k + 1)], line[Math.max(0, k - 1)]));
+    const across = unit(mix(sides[i], sides[i + 1], t));
+    const side = unit(sub(across, mul(tangent, dot(across, tangent))));
+    const kind = structure[Math.min(n - 1, Math.round(u))];
+    let width = lerp(half(i), half(i + 1), smoothstep(t)) * smoothstep(u / 0.6); // the chain starts as a point
+    // A strand ends in an arrowhead: wider than the strand at its base, a point at the last residue.
+    const end = [i, i + 1].find(strandEnd);
+    if (end !== undefined && u >= end - ARROW && u <= end) {
+      if (Math.abs(u - (end - ARROW)) < 1e-9) samples.push({ p, side, width: STRAND, u, kind });
+      width = (ARROW_WIDTH * (end - u)) / ARROW;
+    } else if (end !== undefined && u > end) {
+      width = 0;
+    }
+    samples.push({ p, side, width, u, kind });
+  });
+  return { samples, anchors: ca.map((_, i) => samples.find((s) => s.u >= i - 1e-9)!.p), contacts: data.contacts, length: n };
+}
+
+/** Molecule space to camera space. */
+function rotation(view: View) {
   const [cy, sy, cp, sp] = [Math.cos(view.yaw), Math.sin(view.yaw), Math.cos(view.pitch), Math.sin(view.pitch)];
-  return ([x, y, z]: Vec3) => {
+  return ([x, y, z]: Vec3): Vec3 => {
     const x1 = x * cy + z * sy;
     const z1 = z * cy - x * sy;
-    const y2 = y * cp - z1 * sp;
-    const z2 = z1 * cp + y * sp;
-    const k = (frame.scale * CAMERA) / (CAMERA - z2);
-    return { x: frame.width / 2 + x1 * k, y: frame.height / 2 - y2 * k, z: z2 };
+    return [x1, y * cp - z1 * sp, z1 * cp + y * sp];
   };
 }
 
-/** Pixels per angstrom that keep the molecule inside the frame in every view the pointer can reach. */
-export function fit(points: readonly Vec3[], width: number, height: number, margin = 6): number {
+/** Pixels per angstrom that keep the ribbon inside the frame however far it sways or the pointer turns it. */
+export function fit(shape: Model, width: number, height: number, margin = 7): number {
+  const edges = shape.samples.flatMap((s) => [add(s.p, mul(s.side, s.width)), sub(s.p, mul(s.side, s.width))]);
   let scale = Infinity;
-  for (const yaw of [-1, 0, 1]) for (const pitch of [-1, 0, 1]) {
-    const project = projector({ yaw: REST.yaw + yaw * REACH.yaw, pitch: REST.pitch + pitch * REACH.pitch }, { width: 0, height: 0, scale: 1 });
-    for (const p of points.map(project)) scale = Math.min(scale, (width / 2 - margin) / Math.abs(p.x), (height / 2 - margin) / Math.abs(p.y));
+  for (const a of [-1, 0, 1]) for (const b of [-1, 0, 1]) {
+    const turn = rotation({ yaw: REST.yaw + a * (REACH.yaw + SWAY.yaw), pitch: REST.pitch + b * (REACH.pitch + SWAY.pitch) });
+    for (const edge of edges) {
+      const [x, y, z] = turn(edge);
+      const k = CAMERA / (CAMERA - z);
+      scale = Math.min(scale, (width / 2 - margin) / Math.abs(x * k), (height / 2 - margin) / Math.abs(y * k));
+    }
   }
   return scale;
 }
 
-/** Everything to draw for one moment, sorted from the back of the molecule to the front. */
-export function scene(guide: readonly Vec3[], curve: readonly Vec3[], contacts: readonly Contact[], view: View, frame: Frame, progress: Progress): Shape[] {
-  const project = projector(view, frame);
-  const points = curve.map(project);
-  const zs = points.map((p) => p.z);
-  const [back, front] = [Math.min(...zs), Math.max(...zs)];
-  const depth = (z: number) => clamp((z - back) / (front - back || 1));
-  const shapes: Shape[] = [];
-
-  // The backbone, with a white halo on each piece so nearer strands pass in front of farther ones.
-  const drawn = clamp(progress.chain) * (points.length - 1);
-  for (let s = 0; s < Math.ceil(drawn); s++) {
-    const a = points[s];
-    const part = Math.min(1, drawn - s);
-    const b = { x: lerp(a.x, points[s + 1].x, part), y: lerp(a.y, points[s + 1].y, part), z: lerp(a.z, points[s + 1].z, part) };
-    const t = depth((a.z + b.z) / 2);
-    shapes.push({ kind: 'line', z: (a.z + b.z) / 2, x1: a.x, y1: a.y, x2: b.x, y2: b.y, width: lerp(0.9, 2.3, t), color: mix(FAR, INK, t), alpha: 1, halo: 2.8 });
-    // The pen: a dot at the growing end of the chain.
-    if (s === Math.ceil(drawn) - 1 && progress.chain < 1) shapes.push({ kind: 'dot', z: b.z + 0.01, x: b.x, y: b.y, r: 2.1, color: rgb(INK), alpha: 1 });
-  }
-
-  contacts.forEach(([i, j, confirmed], k) => {
-    const grown = clamp(progress.proposed[k] ?? 0);
-    if (grown <= 0) return;
-    const tested = clamp(progress.tested[k] ?? 0);
-    const settled = clamp(progress.settled[k] ?? 0);
-    const [a, b] = [project(guide[i]), project(guide[j])];
-    const z = (a.z + b.z) / 2 + 0.02;
-    const fade = lerp(0.5, 1, depth(z));
-    const line = (from: number, to: number, look: Pick<Stroke, 'width' | 'color' | 'alpha' | 'dash'>) => {
-      if (to - from < 0.01) return;
-      shapes.push({ kind: 'line', z, x1: lerp(a.x, b.x, from), y1: lerp(a.y, b.y, from), x2: lerp(a.x, b.x, to), y2: lerp(a.y, b.y, to), ...look });
-    };
-
-    if (!confirmed) {
-      // Refuted: the dashed line parts in the middle and draws back to its two ends.
-      const open = easeInOut(tested) / 2;
-      const look = { width: 0.8, color: rgb(PENCIL), alpha: fade * (1 - tested * tested), dash: [2, 2.2] as const };
-      line(0.5 - grown / 2, 0.5 - open, look);
-      line(0.5 + open, 0.5 + grown / 2, look);
-      return;
-    }
-    // Confirmed: the dashes close into a solid stitch, which then thins and stays.
-    const color = mix(PENCIL, INK, tested);
-    line(0.5 - grown / 2, 0.5 + grown / 2, {
-      width: lerp(lerp(0.8, 1.6, tested), 0.8, settled),
-      color,
-      alpha: lerp(1, 0.62, settled) * fade,
-      dash: tested < 1 ? [2, 2.2 * (1 - tested)] : undefined,
-    });
-    // A dot marks each end while the stitch closes.
-    if (tested > 0 && settled < 1) {
-      for (const p of [a, b]) shapes.push({ kind: 'dot', z: p.z + 0.03, x: p.x, y: p.y, r: lerp(0.6, 1.7, tested) * (1 - settled), color, alpha: fade });
-    }
-  });
-
-  return shapes.sort((p, q) => p.z - q.z);
-}
-
-/** Length of the opening sequence in milliseconds. */
-export const DURATION = CHAIN_START_MS + CHAIN_MS + TEST_MS + LINGER_MS + SETTLE_MS;
+/** Length of the opening sequence for a number of contacts, in milliseconds. */
+export const duration = (contacts: number) => TEST_AT + Math.max(0, contacts - 1) * TEST_GAP + TEST_MS + LINGER_MS + FADE_MS;
 
 /**
- * The state of the sequence after `ms`. The proposed contacts appear, then the chain is traced
- * through `residues` residues, and each contact is tested when the chain reaches its later end.
+ * Where the molecule is turned to at `ms`. It turns toward its resting view while the sequence
+ * plays, slowing to a stop, and afterwards sways slowly about that view (unless `still`).
  */
-export function progressAt(ms: number, contacts: readonly Contact[], residues: number): Progress {
-  const reached = contacts.map(([, j]) => CHAIN_START_MS + CHAIN_MS * easedAt(j / (residues - 1)));
+export function viewAt(ms: number, contacts: number, still = false): View {
+  const total = duration(contacts);
+  const left = 1 - clamp(ms / total);
+  const since = Math.max(0, ms - total);
+  const sway = still ? 0 : smoothstep(since / 2500);
   return {
-    chain: easeInOut(clamp((ms - CHAIN_START_MS) / CHAIN_MS)),
-    proposed: contacts.map((_, k) => easeOut(clamp((ms - k * PROPOSE_STAGGER_MS) / PROPOSE_MS))),
-    tested: reached.map((at) => clamp((ms - at) / TEST_MS)),
-    settled: reached.map((at) => easeInOut(clamp((ms - at - TEST_MS - LINGER_MS) / SETTLE_MS))),
+    yaw: REST.yaw - OPENING_TURN * left * left + sway * SWAY.yaw * Math.sin((2 * Math.PI * since) / SWAY_MS.yaw),
+    pitch: REST.pitch + sway * SWAY.pitch * Math.sin((2 * Math.PI * since) / SWAY_MS.pitch),
   };
 }
 
-/** The molecule turns toward its resting view while the sequence plays, slowing to a stop. */
-export function viewAt(ms: number): View {
-  const left = 1 - clamp(ms / DURATION);
-  return { yaw: REST.yaw - OPENING_TURN * left * left, pitch: REST.pitch };
+/** Everything to draw at `ms` into the sequence, sorted from the back of the molecule to the front. */
+export function scene(shape: Model, view: View, frame: Frame, ms: number): Shape[] {
+  const turn = rotation(view);
+  const project = ([x, y, z]: Vec3) => {
+    const k = (frame.scale * CAMERA) / (CAMERA - z);
+    return { x: frame.width / 2 + x * k, y: frame.height / 2 - y * k, z };
+  };
+  const shapes: Shape[] = [];
+
+  const placed = shape.samples.map((s) => ({ c: turn(s.p), side: sub(turn(add(s.p, s.side)), turn(s.p)), width: s.width, hue: hueOf(s.kind) }));
+  const zs = placed.map((s) => s.c[2]);
+  const [back, front] = [Math.min(...zs), Math.max(...zs)];
+  const depth = (z: number) => clamp((z - back) / (front - back || 1));
+  const points = placed.map((s, k) => {
+    const along = unit(sub(placed[Math.min(placed.length - 1, k + 1)].c, placed[Math.max(0, k - 1)].c));
+    return {
+      c: project(s.c),
+      l: project(sub(s.c, mul(s.side, s.width))),
+      r: project(add(s.c, mul(s.side, s.width))),
+      width: s.width,
+      hue: s.hue,
+      facing: Math.abs(unit(cross(along, s.side))[2]), // 1 when the band faces the viewer squarely
+    };
+  });
+
+  const drawn = easeInOut(ms / DRAW_MS) * (points.length - 1);
+  for (let k = 0; k < Math.ceil(drawn); k++) {
+    const [a, b] = [points[k], points[k + 1]];
+    const z = (a.c.z + b.c.z) / 2;
+    const t = depth(z);
+    if (Math.max(a.width, b.width) < 0.25) {
+      shapes.push({ kind: 'loop', z, from: a.c, to: b.c, color: ink(t), width: lerp(0.9, 1.9, t) });
+      continue;
+    }
+    // A band is brightest where it faces the viewer. Its hue is a wash: pale on the lit face,
+    // fuller where the band turns away, and fainter toward the back of the molecule.
+    const lit = smoothstep(((a.facing + b.facing) / 2) * 1.15);
+    const hue = a.hue ?? b.hue;
+    const shade = lerp(206, 255, lit);
+    const wash: Vec3 = hue ? mix(mul(mix(WHITE, hue, 0.74), 0.97), mix(WHITE, hue, 0.3), lit) : [shade, shade, shade]; // grey where the ribbon narrows into a loop
+    shapes.push({ kind: 'band', z, corners: [a.l, a.r, b.r, b.l], fill: rgb(mix(wash, WHITE, (1 - t) * 0.22)), edge: ink(lerp(0.35, 1, t)), width: lerp(0.75, 1.35, t) });
+  }
+
+  shape.contacts.forEach(([i, j, confirmed], k) => {
+    const grown = easeOut((ms - PROPOSE_AT - k * PROPOSE_GAP) / PROPOSE_MS);
+    if (grown <= 0) return;
+    const tested = clamp((ms - TEST_AT - k * TEST_GAP) / TEST_MS);
+    const faded = easeInOut((ms - TEST_AT - k * TEST_GAP - TEST_MS - LINGER_MS) / FADE_MS);
+    if (faded >= 1) return;
+    const [a, b] = [project(turn(shape.anchors[i])), project(turn(shape.anchors[j]))];
+    const z = (a.z + b.z) / 2 + 1.4; // a contact lies just above the two bands it joins
+    const strength = lerp(0.6, 1, depth((a.z + b.z) / 2));
+    const piece = (from: number, to: number, look: { color: string; width: number; alpha: number; dash?: readonly [number, number] }) => {
+      if (to - from < 0.01) return;
+      shapes.push({ kind: 'stitch', z, from: { x: lerp(a.x, b.x, from), y: lerp(a.y, b.y, from) }, to: { x: lerp(a.x, b.x, to), y: lerp(a.y, b.y, to) }, ...look });
+    };
+    if (!confirmed) {
+      // Refuted: the dashed line parts in the middle and draws back to its two ends.
+      const open = easeInOut(tested) / 2;
+      const look = { color: grey(PENCIL), width: 0.8, alpha: strength * (1 - tested * tested), dash: [2, 2.2] as const };
+      piece(0.5 - grown / 2, 0.5 - open, look);
+      piece(0.5 + open, 0.5 + grown / 2, look);
+      return;
+    }
+    // Confirmed: the dashes close into a solid line with a dot at each end, which then fades.
+    const color = grey(lerp(PENCIL, INK, tested));
+    piece(0.5 - grown / 2, 0.5 + grown / 2, { color, width: lerp(lerp(0.8, 1.6, tested), 0.8, faded), alpha: (1 - faded) * strength, dash: tested < 1 ? [2, 2.2 * (1 - tested)] : undefined });
+    if (tested > 0) for (const p of [a, b]) shapes.push({ kind: 'dot', z: z + 0.01, x: p.x, y: p.y, r: lerp(0.6, 1.7, tested) * (1 - faded), color, alpha: strength });
+  });
+
+  return shapes.sort((p, q) => p.z - q.z);
 }

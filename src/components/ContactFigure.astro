@@ -1,77 +1,98 @@
 ---
-// Sidebar figure, without words: an ink drawing of one small protein and the residue contacts a
-// protein language model proposes for it, each tested against the crystal structure.
-// The data comes from scripts/contact-figure.py. The figure needs JavaScript to draw, so it
-// stays hidden without it.
+// The intro figure, without words: a ribbon diagram of one small protein in ink and a wash of
+// color, drawn along its chain. The residue contacts a protein language model proposes for it
+// are then tested against the crystal structure. The data comes from scripts/contact-figure.py.
+// The figure needs JavaScript to draw, so it stays hidden without it.
 import data from '../data/contact-figure.json';
 
 const confirmed = data.contacts.filter(([, , ok]) => ok).length;
-const about = `Protein GB1 (PDB ${data.pdb}) with the residue contacts predicted by the protein language model ESM-2: the crystal structure confirms ${confirmed} of ${data.contacts.length}.`;
+const about = `Ribbon diagram of protein GB1 (PDB ${data.pdb}). Of the ${data.contacts.length} residue contacts the protein language model ESM-2 predicts for it, the crystal structure confirms ${confirmed}.`;
 ---
 <figure class="contacts" hidden>
   <canvas role="img" aria-label={about} title={`${about} Click to replay.`}></canvas>
 </figure>
 
 <style>
-  .contacts { margin: 14px 0 0; }
+  .contacts { margin: 0; }
   .contacts[hidden] { display: none; }
-  canvas { display: block; width: 100%; height: 140px; cursor: pointer; }
-  @media (max-width: 760px) { .contacts { display: none; } }
+  canvas { display: block; width: 212px; height: 152px; cursor: pointer; }
 </style>
 
 <script>
   import data from '../data/contact-figure.json';
-  import { backbone, DURATION, fit, progressAt, REACH, scene, smooth, viewAt, type Contact, type Frame, type Shape, type Vec3 } from '../lib/contactFigure';
+  import { duration, fit, model, REACH, scene, viewAt, type FigureData, type Frame, type Shape } from '../lib/contactFigure';
 
-  /** Paints the shapes back to front. A halo is a white edge that lets a nearer line pass over a farther one. */
+  const PAPER = '#fff';
+
+  /** Paints the shapes, which arrive sorted from the back of the molecule to the front. */
   function paint(context: CanvasRenderingContext2D, shapes: Shape[], frame: Frame) {
     context.clearRect(0, 0, frame.width, frame.height);
+    context.lineJoin = 'round';
     for (const shape of shapes) {
-      context.beginPath();
       context.setLineDash([]);
-      if (shape.kind === 'dot') {
+      context.globalAlpha = 1;
+      context.beginPath();
+      if (shape.kind === 'band') {
+        const [a, b, c, d] = shape.corners;
+        context.moveTo(a.x, a.y); context.lineTo(b.x, b.y); context.lineTo(c.x, c.y); context.lineTo(d.x, d.y);
+        context.closePath();
+        // The fill is stroked in its own color too, which hides the seams between neighboring pieces.
+        context.fillStyle = context.strokeStyle = shape.fill;
+        context.lineWidth = 0.7;
+        context.fill();
+        context.stroke();
+        context.beginPath();
+        context.moveTo(a.x, a.y); context.lineTo(d.x, d.y);
+        context.moveTo(b.x, b.y); context.lineTo(c.x, c.y);
+        context.strokeStyle = shape.edge;
+        context.lineWidth = shape.width;
+        context.lineCap = 'round';
+        context.stroke();
+      } else if (shape.kind === 'dot') {
         context.globalAlpha = shape.alpha;
         context.fillStyle = shape.color;
         context.arc(shape.x, shape.y, shape.r, 0, 2 * Math.PI);
         context.fill();
-        continue;
-      }
-      context.moveTo(shape.x1, shape.y1);
-      context.lineTo(shape.x2, shape.y2);
-      if (shape.halo) {
-        context.globalAlpha = 1;
-        context.strokeStyle = '#fff';
-        context.lineWidth = shape.width + shape.halo;
-        context.lineCap = 'butt';
+      } else {
+        context.moveTo(shape.from.x, shape.from.y);
+        context.lineTo(shape.to.x, shape.to.y);
+        if (shape.kind === 'loop') {
+          context.strokeStyle = PAPER;
+          context.lineWidth = shape.width + 2.4;
+          context.lineCap = 'butt';
+          context.stroke();
+        } else {
+          context.globalAlpha = shape.alpha;
+          if (shape.dash) context.setLineDash([...shape.dash]);
+        }
+        context.strokeStyle = shape.color;
+        context.lineWidth = shape.width;
+        context.lineCap = shape.kind === 'stitch' && shape.dash ? 'butt' : 'round';
         context.stroke();
       }
-      context.globalAlpha = shape.alpha;
-      context.strokeStyle = shape.color;
-      context.lineWidth = shape.width;
-      context.lineCap = shape.dash ? 'butt' : 'round';
-      if (shape.dash) context.setLineDash([...shape.dash]);
-      context.stroke();
     }
     context.globalAlpha = 1;
   }
 
   function start(figure: HTMLElement, canvas: HTMLCanvasElement) {
     const context = canvas.getContext('2d');
-    if (!context || !figure.hidden) return;
+    if (!context) return;
     figure.hidden = false;
 
-    const guide = smooth(data.ca as unknown as Vec3[]);
-    const curve = backbone(guide);
-    const contacts = data.contacts as unknown as Contact[];
+    const ribbon = model(data as unknown as FigureData);
+    const count = ribbon.contacts.length;
+    const total = duration(count);
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    let ms = still ? DURATION : 0; // position in the opening sequence
-    let playing = false;
+    let ms = still ? total : 0; // time since the sequence began; it keeps running for the sway
+    let visible = false;
+    let started = false;
     const turn = { yaw: 0, pitch: 0 }; // what the pointer adds to the view
     let aim = { yaw: 0, pitch: 0 };
     let frame: Frame = { width: 0, height: 0, scale: 1 };
     let pending = 0;
     let last = 0;
+    let drawnAt = 0;
 
     function resize() {
       const { width, height } = canvas.getBoundingClientRect();
@@ -79,27 +100,29 @@ const about = `Protein GB1 (PDB ${data.pdb}) with the residue contacts predicted
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
       context!.setTransform(ratio, 0, 0, ratio, 0, 0);
-      frame = { width, height, scale: fit(curve, width, height) };
+      frame = { width, height, scale: fit(ribbon, width, height) };
     }
 
     function draw() {
-      const view = viewAt(ms);
-      paint(context!, scene(guide, curve, contacts, { yaw: view.yaw + turn.yaw, pitch: view.pitch + turn.pitch }, frame, progressAt(ms, contacts, guide.length)), frame);
+      const view = viewAt(ms, count, still);
+      paint(context!, scene(ribbon, { yaw: view.yaw + turn.yaw, pitch: view.pitch + turn.pitch }, frame, ms), frame);
     }
 
     function tick(now: number) {
       pending = 0;
-      const elapsed = Math.min(50, now - last); // a hidden tab pauses the sequence instead of skipping it
+      const elapsed = Math.min(50, now - last); // a hidden tab pauses the figure instead of skipping ahead
       last = now;
-      if (playing) {
-        ms = Math.min(DURATION, ms + elapsed);
-        playing = ms < DURATION;
-      }
+      if (started) ms += elapsed;
       const ease = 1 - Math.exp(-elapsed / 140);
       turn.yaw += (aim.yaw - turn.yaw) * ease;
       turn.pitch += (aim.pitch - turn.pitch) * ease;
-      draw();
-      if (playing || Math.abs(aim.yaw - turn.yaw) + Math.abs(aim.pitch - turn.pitch) > 0.002) request();
+      const turning = Math.abs(aim.yaw - turn.yaw) + Math.abs(aim.pitch - turn.pitch) > 0.002;
+      // The slow sway does not need every frame; the sequence and the pointer do.
+      if (ms < total || turning || now - drawnAt > 30) {
+        draw();
+        drawnAt = now;
+      }
+      if (visible && started) request();
     }
 
     function request() {
@@ -108,7 +131,7 @@ const about = `Protein GB1 (PDB ${data.pdb}) with the residue contacts predicted
 
     function play() {
       ms = 0;
-      playing = true;
+      started = true;
       request();
     }
 
@@ -117,13 +140,14 @@ const about = `Protein GB1 (PDB ${data.pdb}) with the residue contacts predicted
     window.addEventListener('resize', () => { resize(); draw(); });
     if (still) return;
 
-    // The sequence plays once when the figure comes into view; a click replays it.
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      observer.disconnect();
-      setTimeout(play, 300);
-    }, { threshold: 0.5 });
-    observer.observe(canvas);
+    // The sequence plays once when the figure comes into view, and a click replays it.
+    // Off screen the figure stops drawing.
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (!visible) return;
+      if (started) request();
+      else setTimeout(play, 300);
+    }, { threshold: 0.35 }).observe(canvas);
     canvas.addEventListener('click', play);
 
     // The molecule turns a little toward the pointer and returns when it leaves.
@@ -139,12 +163,8 @@ const about = `Protein GB1 (PDB ${data.pdb}) with the residue contacts predicted
     canvas.addEventListener('pointerleave', () => { aim = { yaw: 0, pitch: 0 }; request(); });
   }
 
-  const figure = document.querySelector<HTMLElement>('.contacts');
-  const canvas = figure?.querySelector('canvas');
-  if (figure && canvas) {
-    // The figure is not shown at phone width, so it starts only once there is room for it.
-    const wide = window.matchMedia('(min-width: 761px)');
-    if (wide.matches) start(figure, canvas);
-    else wide.addEventListener('change', () => start(figure, canvas), { once: true });
+  for (const figure of document.querySelectorAll<HTMLElement>('.contacts')) {
+    const canvas = figure.querySelector('canvas');
+    if (canvas) start(figure, canvas);
   }
 </script>
