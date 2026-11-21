@@ -2,7 +2,6 @@ import type { CollectionEntry } from 'astro:content';
 
 export type Publication = CollectionEntry<'publications'>;
 
-export const arxivUrl = (id: string) => `https://arxiv.org/abs/${id}`;
 export const arxivPdfUrl = (id: string) => `https://arxiv.org/pdf/${id}`;
 export const doiUrl = (doi: string) => `https://doi.org/${doi}`;
 
@@ -46,34 +45,4 @@ const STATUS_LABELS = {
 export function venueLine(d: Pick<Publication['data'], 'status' | 'venue' | 'year'>): string {
   const label = d.status === 'published' ? d.venue || 'Published' : STATUS_LABELS[d.status];
   return label.includes(String(d.year)) ? label : `${label} · ${d.year}`;
-}
-
-export function bibtex(p: Publication): string {
-  const d = p.data;
-  if (d.bibtex) return d.bibtex.trim();
-
-  // No generated citation without a complete author list, or for a manuscript
-  // that has no public copy to cite.
-  if (!d.authors.length || d.authors.some(isElision) || d.status === 'manuscript') return '';
-  const published = d.status === 'published' && !!d.venue;
-  const lastName = plain(d.authors[0]).split(/\s+/).pop() ?? 'anon';
-  const firstWord = d.title.toLowerCase().match(/[a-z0-9]+/)?.[0] ?? 'paper';
-  const key = `${lastName.toLowerCase().replace(/[^a-z]/g, '')}${d.year}${firstWord}`;
-
-  const fields: [string, string][] = [
-    ['title', d.title],
-    ['author', d.authors.map(plain).join(' and ')],
-  ];
-  if (published) fields.push(['booktitle', d.venue!]);
-  fields.push(['year', String(d.year)]);
-  if (d.doi) fields.push(['doi', d.doi]);
-  if (d.arxiv) {
-    if (!published) fields.push(['eprint', d.arxiv], ['archivePrefix', 'arXiv']);
-    fields.push(['url', arxivUrl(d.arxiv)]);
-  } else if (d.pdf) {
-    fields.push(['url', d.pdf]);
-  }
-
-  const body = fields.map(([k, v]) => `  ${k.padEnd(13)}= {${v}},`).join('\n');
-  return `@${published ? 'inproceedings' : 'misc'}{${key},\n${body}\n}`;
 }

@@ -59,7 +59,6 @@ const publications = defineCollection({
     project: z.string().nullish(),
     doi: z.string().nullish(),
     note: z.string().nullish(),
-    bibtex: z.string().nullish(),
   }).refine(
     ({ authors, equalContribution }) => equalContribution.every((author) => authors.includes(author)),
     { message: 'Equal-contribution names must appear in the author list.', path: ['equalContribution'] },

@@ -9,7 +9,7 @@ client-side framework. The portrait, paper figures, and fonts are served locally
 ```bash
 npm install
 npm run dev       # http://localhost:4321
-npm test          # Node 22.6+; publication ordering, author matching, citation logic
+npm test          # Node 22.6+; publication ordering, author matching, venue line
 npm run build     # static output in dist/
 npm run preview
 ```
@@ -49,9 +49,9 @@ imageAlt: "What the figure shows" # required whenever image is set
 video: /media/paper.mp4           # optional; plays in place of the figure, image is its poster
 arxiv: "2606.07678"                # optional; title and [Paper] open arxiv.org/pdf/<id>
 pdf: /files/paper.pdf             # optional; overrides the arXiv PDF link
-code: https://github.com/example  # optional
+code: https://github.com/example  # optional; shown as [Code] with the GitHub mark
 huggingface: https://huggingface.co/datasets/example  # optional; shown as [Dataset] with the Hugging Face logo
-project: https://example.com      # optional; shown as [Website]
+project: https://example.com      # optional; shown as [Website] with a globe
 doi: 10.1234/example              # optional
 ---
 
@@ -62,14 +62,14 @@ The author list must be confirmed, in the paper's original order. The profile
 owner's name is bold. For confirmed co-first authors, add an `equalContribution`
 list containing their exact names from `authors`. These names receive superscript
 asterisks and a small explanation below that paper's author list. Author order is
-unchanged, and citation names never include these markers. No separate
-first-author badges are shown. A hand-written `bibtex` field can override the
-generated citation.
+unchanged. No separate first-author badges are shown.
 
 A long list may leave names out: put a single `"…"` entry where they are omitted
 and give the full count in `authorCount`, shown as "(17 authors)". When no names
-are available, omit `authors`. No BibTeX is generated from an abbreviated or
-unknown author list.
+are available, omit `authors`.
+
+Under each entry the links run [Paper], [Abstract], [Code], [Dataset], [Website],
+skipping the ones the paper does not have. BibTeX is not offered.
 
 Only include work that is cleared for public display, and only the links that
 are. The status decides the line under the authors:
@@ -81,8 +81,8 @@ are. The status decides the line under the authors:
 | `under-review` | Under review | submitted work; the submission venue is never named |
 | `manuscript` | Manuscript | unpublished work that is neither public nor submitted |
 
-A manuscript has no paper link and no BibTeX. The circuit discovery paper is one:
-it must not link to a copy or be described as under review.
+A manuscript has no paper link. The circuit discovery paper is one: it must not
+link to a copy or be described as under review.
 
 The FrontierPro and LiveWorldBench author lists are abbreviated as in the CV.
 Replace them with the full lists, and add links, once the papers are public.
@@ -130,10 +130,8 @@ Icons, CC0-1.0).
 
 ## Interactions and accessibility
 
-- Native Abstract and BibTeX disclosures work without JavaScript.
-- Only one disclosure per paper opens at a time; content fades in for 160 ms.
+- The native Abstract disclosure works without JavaScript; its content fades in for 160 ms.
 - Link color changes take 120 ms. Reduced-motion preferences disable both effects.
-- Clipboard controls announce success or select the citation if access is denied.
 - Keyboard focus, a skip link, mobile layout, and print styles are included.
 
 ## CV and deployment
@@ -168,11 +166,11 @@ change.
 src/components/Profile.astro       Portrait, English and Chinese name, contact links
 src/components/About.astro         Short bio and application status
 src/components/Publications.astro  Research heading and ordered list
-src/components/Publication.astro   Figure, paper metadata, native disclosures
+src/components/Publication.astro   Figure, paper metadata, links, abstract disclosure
 src/components/Footer.astro        Last-updated date (build date)
 src/layouts/Base.astro             Document metadata and skip link
 src/pages/index.astro              Two-column layout
-src/scripts/ui.ts                  Clipboard feedback, figure video playback
+src/scripts/ui.ts                  Figure video playback
 src/styles/global.css             Typography, colors, responsive layout
 src/assets/fonts/                  Chinese name font subset
 ```
