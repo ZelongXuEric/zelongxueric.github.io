@@ -4,4 +4,4 @@ I am an undergraduate at the [University of Wisconsin-Madison](https://www.wisc.
 - Error-controlled scientific discovery
 - Biological foundation models
 
-Before trusting a model, I test it: **false discovery rate control** for circuits in language models, **counterfactual controls** for audio-visual models, and **benchmarks** for AI agents. With Yang Lu, I am now bringing these tests to **protein language models**, where an experiment can confirm or refute what a model has learned.
+I currently work with Yang Lu on interpretability for protein language models.

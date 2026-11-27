@@ -10,6 +10,9 @@ const html = about.rendered?.html ?? '';
 const list = html.match(/<ul>[\s\S]*?<\/ul>/);
 const before = list ? html.slice(0, list.index) : html;
 const after = list ? html.slice(list.index! + list[0].length) : '';
+// The status is plain text in which **two asterisks** mark bold words.
+const escaped = (status ?? '').replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
+const statusHtml = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 const interests = list ? [...list[0].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((item) => item[1].trim()) : [];
 ---
 <section id="about" aria-label="About Zelong Xu" class="intro">
@@ -26,7 +29,7 @@ const interests = list ? [...list[0].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((ite
     </div>
   )}
   {after.trim() && <div class="prose" set:html={after} />}
-  {status && <p class="intro__status">{status}</p>}
+  {status && <p class="intro__status" set:html={statusHtml} />}
 </section>
 
 <style>
@@ -40,6 +43,7 @@ const interests = list ? [...list[0].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((ite
     border-left: 3px solid var(--accent);
     border-radius: 0 4px 4px 0;
   }
+  .intro__status :global(strong) { color: var(--strong); }
   @media (max-width: 760px) {
     .intro__band { grid-template-columns: minmax(0, 1fr); margin: 20px 0 10px; }
   }

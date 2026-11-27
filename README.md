@@ -113,8 +113,7 @@ size, e.g. `ffmpeg -i in.mp4 -vf scale=854:-2 -c:v libx264 -preset slow -crf 27
 In `about.md`, the first list is the research interests. Its items are set in
 serif, one to a line, under a small "Research interests" label, with the figure
 beside them (below them on a phone); the paragraphs before and after the list
-are ordinary text. Bold marks the few terms a reader should catch when skimming.
-Without a list there are no interests and no figure.
+are ordinary text. Without a list there are no interests and no figure.
 
 The figure is a ribbon diagram of protein GB1 (PDB 1PGA), in ink with a wash of
 color, and it has no text. The ribbon is drawn along the chain: arrows for the
@@ -122,8 +121,8 @@ strands, a coiled band for the helix. Then the 28 residue contacts that the
 protein language model ESM-2 ranks highest appear as dashed lines and are tested
 against the crystal structure one by one. A confirmed contact closes into a
 solid line, a refuted one parts in the middle, and all of them fade, leaving the
-ribbon. This is the idea the introduction ends on: what a model proposes, tested
-against an experiment.
+ribbon. This is the idea behind the research interests: what a model proposes,
+tested against an experiment.
 
 Nothing in it is invented. `scripts/contact-figure.py` reads the structure, runs
 ESM-2 (150M) on the sequence, keeps the top L/2 pairs at least six residues
