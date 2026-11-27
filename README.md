@@ -111,9 +111,9 @@ size, e.g. `ffmpeg -i in.mp4 -vf scale=854:-2 -c:v libx264 -preset slow -crf 27
 ## Introduction and its figure
 
 In `about.md`, the first list is the research interests. Its items are set in a
-handwriting face under a small "Research interests" label, one to a line and
-centered on one another, with a hand-drawn cross between them to say that the
-work lies where they meet. The figure is beside them (below them on a phone);
+handwriting face, one to a line and centered on one another, with a hand-drawn
+cross between them to say that the work lies where they meet. They carry no
+visible label; screen readers announce the list as "Research interests". The figure is beside them (below them on a phone);
 the paragraphs before and after the list are ordinary text. Without a list there
 are no interests and no figure.
 
