@@ -12,6 +12,14 @@
   font-weight: 200 900;
   src: url('@fontsource-variable/source-serif-4/files/source-serif-4-latin-opsz-normal.woff2') format('woff2');
 }
+/* Caveat (SIL OFL 1.1) is used only for the research interests in the introduction. */
+@font-face {
+  font-family: 'Caveat';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('@fontsource/caveat/files/caveat-latin-500-normal.woff2') format('woff2');
+}
 /* Noto Serif SC (SIL OFL 1.1), subset to the three characters of the Chinese name. */
 @font-face {
   font-family: 'Noto Serif SC Name';
@@ -30,6 +38,7 @@
   --accent-hover: #174956;
   --rule: #e8eaeb;
   --serif: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+  --hand: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
   --serif-zh: 'Noto Serif SC Name', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', STSong, serif;
   font-family: 'IBM Plex Sans Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 16px;

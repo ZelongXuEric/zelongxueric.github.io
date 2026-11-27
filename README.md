@@ -19,7 +19,7 @@ npm run preview
 | File | Purpose |
 | --- | --- |
 | `src/content/profile.yaml` | Identity, city, affiliation, application status, profile links |
-| `src/content/about.md` | The introduction: a paragraph, the list of research interests, a paragraph |
+| `src/content/about.md` | The introduction: a paragraph, the list of research interests, a sentence |
 | `src/content/portrait.jpg` | Square portrait crop, optimized at build time and shown as a circle |
 | `src/content/publications/*.md` | One research item per file |
 | `src/content/publications/figures/` | One figure per paper, optimized at build time |
@@ -110,10 +110,12 @@ size, e.g. `ffmpeg -i in.mp4 -vf scale=854:-2 -c:v libx264 -preset slow -crf 27
 
 ## Introduction and its figure
 
-In `about.md`, the first list is the research interests. Its items are set in
-serif, one to a line, under a small "Research interests" label, with the figure
-beside them (below them on a phone); the paragraphs before and after the list
-are ordinary text. Without a list there are no interests and no figure.
+In `about.md`, the first list is the research interests. Its items are set in a
+handwriting face under a small "Research interests" label, one to a line and
+centered on one another, with a hand-drawn cross between them to say that the
+work lies where they meet. The figure is beside them (below them on a phone);
+the paragraphs before and after the list are ordinary text. Without a list there
+are no interests and no figure.
 
 The figure is a ribbon diagram of protein GB1 (PDB 1PGA), in ink with a wash of
 color, and it has no text. The ribbon is drawn along the chain: arrows for the
@@ -146,8 +148,8 @@ and the resting view are constants at the top of `src/lib/contactFigure.ts`.
 
 ## Typography
 
-IBM Plex Sans is the text face. The English name and the research interests use
-Source Serif 4. The
+IBM Plex Sans is the text face. The English name uses Source Serif 4, and the
+research interests use Caveat (SIL OFL 1.1), a handwriting face. The
 Chinese name (`nameZh` in `profile.yaml`)
 uses Noto Serif SC (SIL OFL 1.1), subset to exactly 徐泽龙 in
 `src/assets/fonts/noto-serif-sc-name.woff2` (2.5 KB). If the name changes,

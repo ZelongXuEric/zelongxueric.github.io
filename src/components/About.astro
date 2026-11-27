@@ -5,14 +5,12 @@ import ContactFigure from './ContactFigure.astro';
 interface Props { status?: string | null }
 const { status } = Astro.props;
 const about = (await getEntry('about', 'about'))!;
-// The first list in the introduction is the research interests: it is set apart, with the figure beside it.
+// The first list in the introduction is the research interests: it is set apart, with the figure
+// beside it. The interests are centered on one another, with a hand-drawn cross between them.
 const html = about.rendered?.html ?? '';
 const list = html.match(/<ul>[\s\S]*?<\/ul>/);
 const before = list ? html.slice(0, list.index) : html;
 const after = list ? html.slice(list.index! + list[0].length) : '';
-// The status is plain text in which **two asterisks** mark bold words.
-const escaped = (status ?? '').replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
-const statusHtml = escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 const interests = list ? [...list[0].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((item) => item[1].trim()) : [];
 ---
 <section id="about" aria-label="About Zelong Xu" class="intro">
@@ -22,20 +20,30 @@ const interests = list ? [...list[0].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((ite
       <div>
         <p class="intro__label" id="interests-label">Research interests</p>
         <ul class="intro__interests" role="list" aria-labelledby="interests-label">
-          {interests.map((interest) => <li set:html={interest} />)}
+          {interests.map((interest, index) => (
+            <li>
+              {index > 0 && (
+                <svg class="intro__cross" viewBox="0 0 20 20" aria-hidden="true">
+                  <path d="M4.2 4.7C8 8.3 12 12.3 15.9 15.5M15.6 4.2C12.3 8.5 8.5 12.1 4.4 15.9" />
+                </svg>
+              )}
+              <Fragment set:html={interest} />
+            </li>
+          ))}
         </ul>
       </div>
       <ContactFigure />
     </div>
   )}
   {after.trim() && <div class="prose" set:html={after} />}
-  {status && <p class="intro__status" set:html={statusHtml} />}
+  {status && <p class="intro__status">{status}</p>}
 </section>
 
 <style>
   .intro__band { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 36px; align-items: center; margin: 10px 0 8px; }
   .intro__label { margin-bottom: 6px; font-size: 13px; line-height: 1.4; font-weight: 500; color: var(--muted); }
-  .intro__interests { margin: 0; padding: 0; list-style: none; font-family: var(--serif); font-size: 19px; line-height: 1.5; color: var(--strong); }
+  .intro__interests { display: inline-block; margin: 0; padding: 0; list-style: none; font-family: var(--hand); font-size: 28px; line-height: 1.26; font-weight: 500; color: var(--strong); text-align: center; }
+  .intro__cross { display: block; width: 15px; height: 15px; margin: 4px auto 2px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
   .intro__status {
     margin-top: 20px;
     padding: 9px 14px;
@@ -43,8 +51,9 @@ const interests = list ? [...list[0].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((ite
     border-left: 3px solid var(--accent);
     border-radius: 0 4px 4px 0;
   }
-  .intro__status :global(strong) { color: var(--strong); }
   @media (max-width: 760px) {
     .intro__band { grid-template-columns: minmax(0, 1fr); margin: 20px 0 10px; }
+    /* The longer interest stays on one line down to a 320px screen. */
+    .intro__interests { font-size: clamp(22px, calc((100vw - 44px) / 12.3), 28px); }
   }
 </style>
