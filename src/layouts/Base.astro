@@ -2,7 +2,6 @@
 import '../styles/global.css';
 import plexUrl from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2?url';
 import serifUrl from '@fontsource-variable/source-serif-4/files/source-serif-4-latin-opsz-normal.woff2?url';
-import serifItalicUrl from '@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-italic.woff2?url';
 import { getEntry } from 'astro:content';
 import { withBase } from '../lib/url';
 
@@ -62,7 +61,6 @@ const person = {
 
     <link rel="preload" href={plexUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={serifUrl} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={serifItalicUrl} as="font" type="font/woff2" crossorigin />
     <script is:inline type="application/ld+json" set:html={JSON.stringify(person)}></script>
   </head>
   <body>

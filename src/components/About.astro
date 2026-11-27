@@ -5,17 +5,23 @@ import ContactFigure from './ContactFigure.astro';
 interface Props { status?: string | null }
 const { status } = Astro.props;
 const about = (await getEntry('about', 'about'))!;
-// A paragraph written entirely in italics is the lead: it is set apart, with the figure beside it.
+// The first list in the introduction is the research interests: it is set apart, with the figure beside it.
 const html = about.rendered?.html ?? '';
-const lead = html.match(/<p><em>([\s\S]*?)<\/em><\/p>/);
-const before = lead ? html.slice(0, lead.index) : html;
-const after = lead ? html.slice(lead.index! + lead[0].length) : '';
+const list = html.match(/<ul>[\s\S]*?<\/ul>/);
+const before = list ? html.slice(0, list.index) : html;
+const after = list ? html.slice(list.index! + list[0].length) : '';
+const interests = list ? [...list[0].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((item) => item[1].trim()) : [];
 ---
 <section id="about" aria-label="About Zelong Xu" class="intro">
   <div class="prose" set:html={before} />
-  {lead && (
+  {list && (
     <div class="intro__band">
-      <p class="intro__lead" set:html={lead[1]} />
+      <div>
+        <p class="intro__label" id="interests-label">Research interests</p>
+        <ul class="intro__interests" role="list" aria-labelledby="interests-label">
+          {interests.map((interest) => <li set:html={interest} />)}
+        </ul>
+      </div>
       <ContactFigure />
     </div>
   )}
@@ -25,7 +31,8 @@ const after = lead ? html.slice(lead.index! + lead[0].length) : '';
 
 <style>
   .intro__band { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 36px; align-items: center; margin: 10px 0 8px; }
-  .intro__lead { font-family: var(--serif); font-size: 20px; line-height: 1.4; font-style: italic; font-weight: 400; color: var(--strong); text-wrap: balance; }
+  .intro__label { margin-bottom: 6px; font-size: 13px; line-height: 1.4; font-weight: 500; color: var(--muted); }
+  .intro__interests { margin: 0; padding: 0; list-style: none; font-family: var(--serif); font-size: 19px; line-height: 1.5; color: var(--strong); }
   .intro__status {
     margin-top: 20px;
     padding: 9px 14px;
@@ -34,6 +41,6 @@ const after = lead ? html.slice(lead.index! + lead[0].length) : '';
     border-radius: 0 4px 4px 0;
   }
   @media (max-width: 760px) {
-    .intro__band { grid-template-columns: minmax(0, 1fr); margin: 14px 0 10px; }
+    .intro__band { grid-template-columns: minmax(0, 1fr); margin: 20px 0 10px; }
   }
 </style>

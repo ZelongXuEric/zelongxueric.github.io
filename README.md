@@ -19,7 +19,7 @@ npm run preview
 | File | Purpose |
 | --- | --- |
 | `src/content/profile.yaml` | Identity, city, affiliation, application status, profile links |
-| `src/content/about.md` | The introduction: a paragraph, the lead sentence in italics, a paragraph |
+| `src/content/about.md` | The introduction: a paragraph, the list of research interests, a paragraph |
 | `src/content/portrait.jpg` | Square portrait crop, optimized at build time and shown as a circle |
 | `src/content/publications/*.md` | One research item per file |
 | `src/content/publications/figures/` | One figure per paper, optimized at build time |
@@ -110,11 +110,11 @@ size, e.g. `ffmpeg -i in.mp4 -vf scale=854:-2 -c:v libx264 -preset slow -crf 27
 
 ## Introduction and its figure
 
-In `about.md`, a paragraph written entirely in italics is the lead sentence. It
-is set in serif italic with the figure beside it (below it on a phone); the
-paragraphs before and after it are ordinary text. Bold marks the few terms a
-reader should catch when skimming. Without such a paragraph there is no lead and
-no figure.
+In `about.md`, the first list is the research interests. Its items are set in
+serif, one to a line, under a small "Research interests" label, with the figure
+beside them (below them on a phone); the paragraphs before and after the list
+are ordinary text. Bold marks the few terms a reader should catch when skimming.
+Without a list there are no interests and no figure.
 
 The figure is a ribbon diagram of protein GB1 (PDB 1PGA), in ink with a wash of
 color, and it has no text. The ribbon is drawn along the chain: arrows for the
@@ -139,16 +139,16 @@ python scripts/contact-figure.py 1PGA.pdb > src/data/contact-figure.json
 The sequence plays once when the figure comes into view. Afterwards the molecule
 sways slowly, stops drawing when it is off screen, turns slightly toward the
 pointer, and replays on a click. With reduced motion the finished ribbon appears
-at once and stays still. Without JavaScript the figure is absent and the lead
-stands alone. Its only words are the tooltip and the label for screen readers;
+at once and stays still. Without JavaScript the figure is absent and the interests
+stand alone. Its only words are the tooltip and the label for screen readers;
 their counts come from the data, but they name the model and the protein by
 hand, so update `ContactFigure.astro` if either changes. Colors, sizes, timing,
 and the resting view are constants at the top of `src/lib/contactFigure.ts`.
 
 ## Typography
 
-IBM Plex Sans is the text face. The English name uses Source Serif 4, and the
-lead sentence of the introduction its italic. The
+IBM Plex Sans is the text face. The English name and the research interests use
+Source Serif 4. The
 Chinese name (`nameZh` in `profile.yaml`)
 uses Noto Serif SC (SIL OFL 1.1), subset to exactly 徐泽龙 in
 `src/assets/fonts/noto-serif-sc-name.woff2` (2.5 KB). If the name changes,
@@ -205,7 +205,7 @@ change.
 ```text
 src/components/Profile.astro       Portrait, English and Chinese name, contact links
 src/components/ContactFigure.astro Intro figure: the canvas and its script
-src/components/About.astro         Introduction with its lead sentence and figure, application status
+src/components/About.astro         Introduction with the research interests and figure, application status
 src/components/Publications.astro  Research heading and ordered list
 src/components/Publication.astro   Figure, paper metadata, links, abstract disclosure
 src/components/Footer.astro        Last-updated date (build date)
